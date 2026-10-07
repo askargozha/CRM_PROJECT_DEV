@@ -40,11 +40,17 @@ git config --global user.email "ваша@почта"
 
 В VS Code: Terminal → New Terminal.
 
-```bash
-git clone https://github.com/<владелец>/<репозиторий>.git
-cd <репозиторий>
+```powershell
+cd ~\Documents
+git clone https://github.com/askargozha/CRM_PROJECT_DEV.git
+cd CRM_PROJECT_DEV
 git checkout dev
+code .
 ```
+
+При первом `clone` откроется браузер — войдите в свой GitHub
+(приглашение в репозиторий должно быть уже принято — письмо от GitHub
+«invited you to CRM_PROJECT_DEV» → **Accept invitation**).
 
 Создать файл настроек:
 
