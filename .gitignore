@@ -1,0 +1,27 @@
+# Секреты и локальные настройки — никогда не в git
+.env
+backend/.env
+backend/.env.dev
+
+# Backend
+backend/venv/
+backend/uploads/
+backend/**/__pycache__/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Python
+*.pyc
+
+# Logs
+*.log
+
+# VS Code (рекомендованные расширения — общие для всех)
+.vscode/*
+!.vscode/extensions.json
+
+# Windows
+Thumbs.db
+Desktop.ini

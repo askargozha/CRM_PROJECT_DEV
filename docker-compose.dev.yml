@@ -1,0 +1,78 @@
+# Локальная разработка (практиканты и все, кто дорабатывает проект).
+# Отдельно от docker-compose.yml и от боевого сервера: своя пустая база,
+# без синхронизации с внешней CRM. ИИ, почта и Telegram-бот включаются
+# своими тестовыми ключами в backend/.env.dev (см. CONTRIBUTING.md).
+#
+# Первый запуск и всё остальное — см. CONTRIBUTING.md:
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Код подключён «вживую»: правите файл в VS Code — backend и сайт сами
+# перезапускаются, пересобирать ничего не нужно.
+name: crm-dev
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      # 5433, чтобы не конфликтовать с Postgres, если он установлен
+      # на компьютере (подключение из pgAdmin/DBeaver: localhost:5433).
+      - "5433:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.dev
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: crm_db
+      DB_USER: postgres
+      DB_PASSWORD: devpassword
+      DOCKER_ENV: "1"
+      # Синхронизация с внешней CRM (ЕКЦ 109) в разработке выключена
+      # всегда — тестового доступа к ней нет. Бот включается в
+      # backend/.env.dev (RUN_BOT_IN_BACKEND) со своим тестовым ботом.
+      EXTERNAL_CRM_SYNC_ENABLED: "false"
+      # Перезапуск при правке .py-файлов (см. entrypoint.sh).
+      UVICORN_RELOAD: "1"
+      # На Windows Docker не видит изменения файлов без опроса.
+      WATCHFILES_FORCE_POLLING: "true"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      # Своя папка загрузок, чтобы файлы не попадали в git.
+      - uploads_dev:/app/uploads
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    # npm ci — ставит зависимости ровно по package-lock.json.
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_POLLING: "true"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      # node_modules — внутри контейнера, а не из папки на Windows
+      # (иначе ломаются бинарники под Linux).
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pgdata_dev:
+  uploads_dev:
+  frontend_node_modules:

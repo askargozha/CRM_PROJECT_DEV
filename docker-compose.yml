@@ -1,0 +1,95 @@
+# Этот файл описывает весь проект как набор контейнеров:
+#   db       — база данных PostgreSQL
+#   backend  — сам API (FastAPI)
+#   bot      — Telegram-бот (использует тот же код, что и backend)
+#   frontend — сайт (собранный React, отдаётся через nginx)
+#
+# Запуск всего проекта — одна команда: docker compose up --build
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      # Данные базы хранятся отдельно от контейнера — если контейнер
+      # пересоберётся или удалится, сами данные не пропадут.
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Не обязательно, но удобно — позволяет подключаться к базе
+      # через pgAdmin с самого компьютера, как и раньше.
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+      REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+      CURL_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+      PYTHONHTTPSVERIFY: 0
+      DOCKER_ENV: "1"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      # Фото из Telegram-бота должны переживать пересборку контейнера.
+      - uploads_data:/app/uploads
+    healthcheck:
+      # Позволяет другим контейнерам (боту) понять, что backend не
+      # просто запущен, а уже реально готов принимать запросы (то
+      # есть миграции точно применены) — без этого бот мог бы
+      # запуститься раньше и попытаться сам катить миграции
+      # параллельно с backend, что и вызывало ошибку "уже существует".
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  bot:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+      DOCKER_ENV: "1"
+    depends_on:
+      db:
+        condition: service_started
+      backend:
+        # Ждём не просто "backend запущен", а "backend прошёл
+        # healthcheck" — то есть миграции уже гарантированно накачены.
+        condition: service_healthy
+    # Тот же образ, что у backend, но команда запуска другая — бот,
+    # а не веб-сервер.
+    command: ["python", "-m", "app.telegram_bot"]
+    volumes:
+      - uploads_data:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Пусто по умолчанию — обычное поведение (тот же хост, порт
+        # 8000). Для туннеля (ngrok) — задайте перед сборкой:
+        #   $env:VITE_API_URL="https://ваш-адрес-backend.ngrok-free.app"
+        VITE_API_URL: ${VITE_API_URL:-}
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  uploads_data:
