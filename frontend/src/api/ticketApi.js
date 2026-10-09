@@ -79,7 +79,9 @@ export function getTickets() {
 export function getTicketsAnalyticsSummary() {
     return request("/tickets/analytics-summary")
 }
-
+export function getUnsentTickets() {
+    return request("/tickets/unsent")
+}
 export function getPublicAnalyticsSummary() {
     return request("/public/analytics-summary")
 }

@@ -21,6 +21,7 @@ import Staff from "./pages/Staff"
 import EmailOperators from "./pages/EmailOperators"
 import IncomingEmails from "./pages/IncomingEmails"
 import Analytics from "./pages/Analytics"
+import UnsentTickets from "./pages/UnsentTickets"
 import Cybersecurity from "./pages/Cybersecurity"
 import NationalProjects from "./pages/NationalProjects"
 
@@ -290,7 +291,11 @@ function CRMLayout() {
                                 {t("nav_analytics")}
                             </NavLink>
                         )}
-
+{["Администратор", "Специалист"].includes(user.role_name) && (
+    <NavLink to="/unsent-tickets">
+        Неотправленные
+    </NavLink>
+)}
                         <NavLink to="/cybersecurity">
                             {t("footer_cybersecurity")}
                         </NavLink>
@@ -372,7 +377,14 @@ function CRMLayout() {
                                     : <Navigate to="/" replace />
                             }
                         />
-
+<Route
+    path="/unsent-tickets"
+    element={
+        ["Администратор", "Специалист"].includes(user.role_name)
+            ? <UnsentTickets />
+            : <Navigate to="/" replace />
+    }
+/>
                         <Route
                             path="/cybersecurity"
                             element={<Cybersecurity />}

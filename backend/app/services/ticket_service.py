@@ -54,6 +54,21 @@ class TicketService:
             )
 
         return self.repository.get_all(db)
+    def get_unsent_tickets(
+        self,
+        db: Session,
+        current_user: User
+    ) -> list[Ticket]:
+        """
+        Возвращает неотправленные обращения (email_sent = False) для сотрудников.
+        """
+        self._require_staff(current_user)
+        
+        all_tickets = self.repository.get_all(db)
+        return [
+            t for t in all_tickets 
+            if not t.email_sent and t.status != "Закрыто"
+        ]    
 
     def get_analytics_tickets(
         self,

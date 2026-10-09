@@ -49,7 +49,19 @@ def get_tickets(
     current_user: User = Depends(get_current_user)
 ):
     return ticket_service.get_all_tickets(db, current_user)
-
+@router.get(
+    "/unsent",
+    response_model=list[TicketResponse],
+    dependencies=[Depends(require_staff)]
+)
+def get_unsent_tickets(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Получение списка неотправленных обращений — доступно только сотрудникам.
+    """
+    return ticket_service.get_unsent_tickets(db, current_user)
 
 # ВАЖНО: должен идти раньше "/{ticket_id}", иначе FastAPI примет
 # "analytics-summary" за значение ticket_id.
