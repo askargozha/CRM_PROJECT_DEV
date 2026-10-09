@@ -67,7 +67,7 @@ class TicketService:
         all_tickets = self.repository.get_all(db)
         return [
             t for t in all_tickets 
-            if not t.email_sent and t.status != "Закрыто"
+            if not t.email_sent and t.status not in ["Закрыто", "CLOSED", "RESOLVED", "Решено"]
         ]    
 
     def get_analytics_tickets(
