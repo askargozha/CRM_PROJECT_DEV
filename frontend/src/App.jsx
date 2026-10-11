@@ -39,9 +39,7 @@ import { useLanguage } from "./context/LanguageContext"
 // обращения и не должен видеть служебные разделы CRM.
 const CITIZEN_ROLE_NAME = "Пользователь"
 
-
 function NavLink({ to, children }) {
-
     const location = useLocation()
 
     const isActive =
@@ -61,9 +59,7 @@ function NavLink({ to, children }) {
     )
 }
 
-
 function getGreeting(hour, t) {
-
     if (hour < 6) return t("greeting_night")
     if (hour < 12) return t("greeting_morning")
     if (hour < 18) return t("greeting_day")
@@ -71,9 +67,7 @@ function getGreeting(hour, t) {
     return t("greeting_evening")
 }
 
-
 function LanguageSwitcher() {
-
     const { language, setLanguage } = useLanguage()
 
     return (
@@ -94,9 +88,7 @@ function LanguageSwitcher() {
     )
 }
 
-
 function CRMLayout() {
-
     const {
         user,
         logout
@@ -110,14 +102,12 @@ function CRMLayout() {
     const [now, setNow] = useState(new Date())
 
     useEffect(() => {
-
         const timer = setInterval(
             () => setNow(new Date()),
             1000
         )
 
         return () => clearInterval(timer)
-
     }, [])
 
     const locale = language === "kz" ? "kk-KZ" : "ru-RU"
@@ -149,7 +139,6 @@ function CRMLayout() {
     ]
 
     function handleChannelClick(channel) {
-
         if (channel.action === "create") {
             navigate(
                 "/tickets",
@@ -163,7 +152,6 @@ function CRMLayout() {
     }
 
     function handleLogout() {
-
         logout()
 
         navigate(
@@ -176,11 +164,8 @@ function CRMLayout() {
 
     return (
         <div className="app">
-
             <header className="header">
-
                 <div className="header-greeting">
-
                     <h1>
                         {getGreeting(now.getHours(), t)}, {firstName}
                     </h1>
@@ -189,7 +174,6 @@ function CRMLayout() {
                         <span className="header-clock-time">{timeLabel}</span>
                         <span className="header-clock-date">{dateLabel}</span>
                     </div>
-
                 </div>
 
                 <div className="header-channels">
@@ -207,11 +191,9 @@ function CRMLayout() {
                 </div>
 
                 <div className="user-panel">
-
                     <LanguageSwitcher />
 
                     <div className="user-info">
-
                         <strong>
                             {user.full_name}
                         </strong>
@@ -219,7 +201,6 @@ function CRMLayout() {
                         <span>
                             {user.role_name}
                         </span>
-
                     </div>
 
                     <button
@@ -228,17 +209,12 @@ function CRMLayout() {
                     >
                         {t("nav_logout")}
                     </button>
-
                 </div>
-
             </header>
 
             <main className="main">
-
                 <aside className="sidebar">
-
                     <div className="brand">
-
                         <img
                             src={logo}
                             alt="Smart Aqmola"
@@ -249,11 +225,9 @@ function CRMLayout() {
                             <span className="brand-name">SMART AQMOLA</span>
                             <span className="brand-tag">{t("brand_tag")}</span>
                         </div>
-
                     </div>
 
                     <ul>
-
                         <NavLink to="/">
                             {t("nav_home")}
                         </NavLink>
@@ -291,11 +265,13 @@ function CRMLayout() {
                                 {t("nav_analytics")}
                             </NavLink>
                         )}
-{["Администратор", "Специалист"].includes(user.role_name) && (
-    <NavLink to="/unsent-tickets">
-        Неотправленные
-    </NavLink>
-)}
+
+                        {["Администратор", "Специалист"].includes(user.role_name) && (
+                            <NavLink to="/unsent-tickets">
+                                {t("nav_unsent_tickets") || "Неотправленные"}
+                            </NavLink>
+                        )}
+
                         <NavLink to="/cybersecurity">
                             {t("footer_cybersecurity")}
                         </NavLink>
@@ -309,15 +285,11 @@ function CRMLayout() {
                                 {t("footer_digital_code")}
                             </a>
                         </li>
-
                     </ul>
-
                 </aside>
 
                 <section className="content">
-
                     <Routes>
-
                         <Route
                             path="/"
                             element={<Dashboard />}
@@ -377,14 +349,16 @@ function CRMLayout() {
                                     : <Navigate to="/" replace />
                             }
                         />
-<Route
-    path="/unsent-tickets"
-    element={
-        ["Администратор", "Специалист"].includes(user.role_name)
-            ? <UnsentTickets />
-            : <Navigate to="/" replace />
-    }
-/>
+
+                        <Route
+                            path="/unsent-tickets"
+                            element={
+                                ["Администратор", "Специалист"].includes(user.role_name)
+                                    ? <UnsentTickets />
+                                    : <Navigate to="/" replace />
+                            }
+                        />
+
                         <Route
                             path="/cybersecurity"
                             element={<Cybersecurity />}
@@ -404,35 +378,25 @@ function CRMLayout() {
                                 />
                             }
                         />
-
                     </Routes>
-
                 </section>
-
             </main>
 
             <footer className="footer">
                 <div className="footer-content">
-
                     <span>
                         © {new Date().getFullYear()} {t("footer_copyright")}
                     </span>
-
                 </div>
             </footer>
-
         </div>
     )
 }
 
-
 function App() {
-
     return (
         <BrowserRouter>
-
             <Routes>
-
                 <Route
                     path="/login"
                     element={<Login />}
@@ -457,15 +421,11 @@ function App() {
                     path="/*"
                     element={
                         <ProtectedRoute>
-
                             <CRMLayout />
-
                         </ProtectedRoute>
                     }
                 />
-
             </Routes>
-
         </BrowserRouter>
     )
 }
