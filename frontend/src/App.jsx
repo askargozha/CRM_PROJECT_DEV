@@ -35,8 +35,8 @@ import PublicAnalytics from "./pages/PublicAnalytics"
 import { useAuth } from "./context/AuthContext"
 import { useLanguage } from "./context/LanguageContext"
 
-// Обычный житель (бывшая роль "Наблюдатель") видит только свои
-// обращения и не должен видеть служебные разделы CRM.
+import { getUnsentTickets } from "./api/ticketApi"
+
 const CITIZEN_ROLE_NAME = "Пользователь"
 
 function NavLink({ to, children }) {
@@ -100,6 +100,7 @@ function CRMLayout() {
     const isCitizen = user.role_name === CITIZEN_ROLE_NAME
 
     const [now, setNow] = useState(new Date())
+    const [unsentCount, setUnsentCount] = useState(0)
 
     useEffect(() => {
         const timer = setInterval(
@@ -109,6 +110,18 @@ function CRMLayout() {
 
         return () => clearInterval(timer)
     }, [])
+
+    // Получаем количество неотправленных обращений для бейджа
+    useEffect(() => {
+        if (["Администратор", "Специалист"].includes(user.role_name)) {
+            getUnsentTickets()
+                .then((res) => {
+                    const data = res.data || []
+                    setUnsentCount(data.length)
+                })
+                .catch(() => setUnsentCount(0))
+        }
+    }, [user.role_name])
 
     const locale = language === "kz" ? "kk-KZ" : "ru-RU"
 
@@ -269,6 +282,19 @@ function CRMLayout() {
                         {["Администратор", "Специалист"].includes(user.role_name) && (
                             <NavLink to="/unsent-tickets">
                                 {t("nav_unsent_tickets") || "Неотправленные"}
+                                {unsentCount > 0 && (
+                                    <span style={{
+                                        marginLeft: "8px",
+                                        backgroundColor: "#e53935",
+                                        color: "#fff",
+                                        borderRadius: "10px",
+                                        padding: "2px 8px",
+                                        fontSize: "12px",
+                                        fontWeight: "bold"
+                                    }}>
+                                        {unsentCount}
+                                    </span>
+                                )}
                             </NavLink>
                         )}
 
