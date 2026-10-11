@@ -2,6 +2,31 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { getUnsentTickets } from "../api/ticketApi"
 
+// Функция для сопоставления ошибки с понятным типом по ТЗ
+const getReadableError = (error) => {
+    if (!error) return "Другое"
+    
+    const err = error.toLowerCase()
+
+    if (err.includes("ai") || err.includes("ии") || err.includes("openai") || err.includes("model")) {
+        return "ИИ не сработал"
+    }
+    if (err.includes("profanity") || err.includes("мат") || err.includes("модерац") || err.includes("бессодержательн") || err.includes("спам")) {
+        return "Модерация"
+    }
+    if (err.includes("limit") || err.includes("лимит") || err.includes("quota") || err.includes("exceeded")) {
+        return "Лимит писем"
+    }
+    if (err.includes("operator") || err.includes("оператор") || err.includes("address") || err.includes("адрес") || err.includes("recipient")) {
+        return "Нет оператора или адреса"
+    }
+    if (err.includes("smtp") || err.includes("mail") || err.includes("почт") || err.includes("send") || err.includes("connection")) {
+        return "Ошибка почты"
+    }
+
+    return "Другое"
+}
+
 export default function UnsentTickets() {
     const [tickets, setTickets] = useState([])
     const [loading, setLoading] = useState(true)
@@ -41,8 +66,8 @@ export default function UnsentTickets() {
                             <tr key={ticket.id}>
                                 <td>#{ticket.id}</td>
                                 <td>{ticket.category || ticket.ai_category || "Без категории"}</td>
-                                <td style={{ color: "#d32f2f" }}>
-                                    {ticket.email_error || "Требуется проверка"}
+                                <td style={{ color: "#d32f2f", fontWeight: "500" }}>
+                                    {getReadableError(ticket.email_error)}
                                 </td>
                                 <td>
                                     <Link to={`/tickets/${ticket.id}`} className="btn-secondary">
