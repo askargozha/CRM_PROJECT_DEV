@@ -281,7 +281,7 @@ function CRMLayout() {
 
                         {["Администратор", "Специалист"].includes(user.role_name) && (
                             <NavLink to="/unsent-tickets">
-                                { "Неотправленные"}
+                                {t("nav_unsent_tickets") || "Неотправленные"}
                                 {unsentCount > 0 && (
                                     <span style={{
                                         marginLeft: "8px",
