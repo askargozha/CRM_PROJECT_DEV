@@ -7,6 +7,7 @@ from app.models.ticket import Ticket
 from app.models.ticket_attachment import TicketAttachment
 from app.models.ticket_comment import TicketComment
 from app.models.user import User
+from app.models.ticket_history import TicketHistory #Добавил модель истории обращений
 
 __all__ = [
     "EmailOperator",
@@ -18,4 +19,5 @@ __all__ = [
     "TicketAttachment",
     "TicketComment",
     "User"
+    "TicketHistory"          #Зарегистрировал модель истории для импорта через models
 ]
