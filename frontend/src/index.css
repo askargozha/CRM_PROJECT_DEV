@@ -11,11 +11,53 @@ body,
     min-height: 100vh;
 }
 
+/* ==========================================================================
+   ГЛОБАЛЬНЫЕ CSS-ПЕРЕМЕННЫЕ (СВЕТЛАЯ И ТЁМНАЯ ТЕМЫ)
+   ========================================================================== */
+:root {
+  --bg-primary: #F3F7FB;
+  --bg-surface: #ffffff;
+  --bg-hover: #e2e8f0;
+  
+  --text-primary: #16233D;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --border-color: #cbd5e1;
+  
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-hover: #334155;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  
+  --border-color: #334155;
+  
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+}
+
 body {
     font-family: "Inter", "Segoe UI", Arial, sans-serif;
-    background: #F3F7FB;
-    color: #16233D;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 ::selection {
