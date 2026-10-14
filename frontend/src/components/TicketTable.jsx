@@ -5,7 +5,21 @@ import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
 import { translatePriority } from "../i18n/helpers"
 
-// Расчет времени задержки ("Сколько висит")
+// Словарь понятных названий ошибок
+const ERROR_LABELS = {
+    "operator_not_found": "Нет оператора или адреса",
+    "ai_failed": "ИИ не сработал",
+    "moderation_required": "Требуется модерация",
+    "rate_limit_exceeded": "Лимит писем",
+    "smtp_error": "Ошибка почты",
+    "email_failed": "Ошибка отправки почты"
+}
+
+export const formatEmailError = (errorKey) => {
+    if (!errorKey) return "Ошибка отправки"
+    return ERROR_LABELS[errorKey] || errorKey
+}
+
 function getTimeAgo(dateString) {
     if (!dateString) return "—"
     const created = new Date(dateString)
@@ -47,7 +61,7 @@ function exportToExcel(tickets, filenamePrefix, t) {
     })
 }
 
-function TicketTable({ tickets, title, hideColumns = [] }) {
+function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false }) {
     const { t } = useLanguage()
 
     const hidePhone = hideColumns.includes("phone")
@@ -232,15 +246,29 @@ function TicketTable({ tickets, title, hideColumns = [] }) {
 
             <table>
                 <thead>
-                    <tr>
-                        <th>№</th>
-                        <th>Район</th>
-                        <th>Оператор</th>
-                        <th>Тема / Категория</th>
-                        <th>Причина задержки</th>
-                        <th>Сколько висит</th>
-                        <th>Действие</th>
-                    </tr>
+                    {isUnsentView ? (
+                        <tr>
+                            <th>№</th>
+                            <th>Район</th>
+                            <th>Оператор</th>
+                            <th>Тема / Категория</th>
+                            <th>Причина задержки</th>
+                            <th>Сколько висит</th>
+                            <th>Действие</th>
+                        </tr>
+                    ) : (
+                        <tr>
+                            <th>{t("table_col_number")}</th>
+                            <th>{t("table_col_applicant")}</th>
+                            {!hidePhone && <th>{t("table_col_phone")}</th>}
+                            <th>{t("table_col_district")}</th>
+                            <th>{t("table_col_operator")}</th>
+                            <th>{t("table_col_category_ai")}</th>
+                            <th>{t("table_col_status")}</th>
+                            {!hidePriority && <th>{t("table_col_priority")}</th>}
+                            <th>{t("table_col_date")}</th>
+                        </tr>
+                    )}
                 </thead>
 
                 <tbody>
@@ -251,30 +279,50 @@ function TicketTable({ tickets, title, hideColumns = [] }) {
                                 onClick={() => navigate(`/tickets/${ticket.id}`)}
                                 className="clickable-row"
                             >
-                                <td>#{ticket.id}</td>
-                                <td>{ticket.district || "Не указан"}</td>
-                                <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                <td>{ticket.ai_category || ticket.category || "—"}</td>
-                                <td style={{ color: "#d9534f", fontWeight: "500" }}>
-                                    {ticket.email_error || "Другое"}
-                                </td>
-                                <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
-                                <td>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            navigate(`/tickets/${ticket.id}`)
-                                        }}
-                                        className="action-link"
-                                    >
-                                        Проверить и отправить
-                                    </button>
-                                </td>
+                                {isUnsentView ? (
+                                    <>
+                                        <td>#{ticket.id}</td>
+                                        <td>{ticket.district || "Не указан"}</td>
+                                        <td>{ticket.operator || t("filter_operator_unknown")}</td>
+                                        <td>{ticket.ai_category || ticket.category || "—"}</td>
+                                        <td style={{ color: "#d9534f", fontWeight: "500" }}>
+                                            {formatEmailError(ticket.email_error)}
+                                        </td>
+                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
+                                        <td>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    navigate(`/tickets/${ticket.id}`)
+                                                }}
+                                                className="action-link"
+                                            >
+                                                Проверить и отправить
+                                            </button>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td>#{ticket.id}</td>
+                                        <td>{ticket.applicant}</td>
+                                        {!hidePhone && <td>{ticket.phone || "—"}</td>}
+                                        <td>{ticket.district || t("filter_district_unknown")}</td>
+                                        <td>{ticket.operator || t("filter_operator_unknown")}</td>
+                                        <td>{ticket.ai_category || "—"}</td>
+                                        <td>
+                                            <StatusBadge status={ticket.status} />
+                                        </td>
+                                        {!hidePriority && (
+                                            <td>{translatePriority(ticket.priority, t)}</td>
+                                        )}
+                                        <td>{ticket.date || ticket.created_date || "—"}</td>
+                                    </>
+                                )}
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={7} className="empty-table">
+                            <td colSpan={isUnsentView ? 7 : 9} className="empty-table">
                                 {tickets.length === 0
                                     ? t("table_empty_no_tickets")
                                     : t("table_empty_no_match")}
