@@ -22,7 +22,7 @@ function Dashboard() {
                     {!loading && (
                         <TicketTable
                             tickets={recentTickets}
-                            hideColumns={["phone", "priority"]}
+                            title="Последние обращения"
                         />
                     )}
                 </div>
