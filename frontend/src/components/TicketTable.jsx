@@ -224,7 +224,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                     onChange={(event) => setCategory(event.target.value)}
                     className="filter"
                 >
-                    <option value="Все">{t("filter_category_all") || "Все категории"}</option>
+                    <option value="Все">Все категории</option>
                     {categoryOptions.map((value) => (
                         <option key={value} value={value}>
                             {value}
