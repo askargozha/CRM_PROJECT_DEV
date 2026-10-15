@@ -71,9 +71,11 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
     const [status, setStatus] = useState("Все")
     const [operator, setOperator] = useState("Все")
     const [district, setDistrict] = useState("Все")
+    const [category, setCategory] = useState("Все")
     const [emailStatus, setEmailStatus] = useState("Все")
     const [dateFrom, setDateFrom] = useState("")
     const [dateTo, setDateTo] = useState("")
+    const [sortOrder, setSortOrder] = useState("asc") // asc = сначала старые, desc = сначала новые
 
     const navigate = useNavigate()
 
@@ -92,6 +94,15 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
         })
         return Array.from(unique).sort()
     }, [tickets, t])
+
+    const categoryOptions = useMemo(() => {
+        const unique = new Set()
+        tickets.forEach((ticket) => {
+            const cat = ticket.ai_category || ticket.category
+            if (cat) unique.add(cat)
+        })
+        return Array.from(unique).sort()
+    }, [tickets])
 
     const filteredTickets = tickets
         .filter(ticket =>
@@ -112,6 +123,11 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                 ? true
                 : (ticket.district || t("filter_district_unknown")) === district
         )
+        .filter(ticket =>
+            category === "Все"
+                ? true
+                : (ticket.ai_category || ticket.category) === category
+        )
         .filter(ticket => {
             if (emailStatus === "Все") return true
             return emailStatus === "Отправлено"
@@ -126,20 +142,32 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
             if (dateTo && ticketDate > dateTo) return false
             return true
         })
+        .sort((a, b) => {
+            const parseDate = (t) => {
+                const str = t.created_date || t.date || t.created_at
+                return str ? new Date(str).getTime() : 0
+            }
+            const dateA = parseDate(a)
+            const dateB = parseDate(b)
+
+            return sortOrder === "asc" ? dateA - dateB : dateB - dateA
+        })
 
     function handleResetFilters() {
         setSearch("")
         setStatus("Все")
         setOperator("Все")
         setDistrict("Все")
+        setCategory("Все")
         setEmailStatus("Все")
         setDateFrom("")
         setDateTo("")
+        setSortOrder("asc")
     }
 
     const hasActiveFilters =
         search || status !== "Все" || operator !== "Все" || district !== "Все" ||
-        emailStatus !== "Все" || dateFrom || dateTo
+        category !== "Все" || emailStatus !== "Все" || dateFrom || dateTo || sortOrder !== "asc"
 
     return (
         <div className="table-container">
@@ -201,6 +229,28 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                             {value}
                         </option>
                     ))}
+                </select>
+
+                <select
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    className="filter"
+                >
+                    <option value="Все">Все категории</option>
+                    {categoryOptions.map((value) => (
+                        <option key={value} value={value}>
+                            {value}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value)}
+                    className="filter"
+                >
+                    <option value="asc">Сначала старые</option>
+                    <option value="desc">Сначала новые</option>
                 </select>
 
                 <select
