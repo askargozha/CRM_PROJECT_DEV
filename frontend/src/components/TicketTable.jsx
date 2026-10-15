@@ -75,7 +75,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
     const [emailStatus, setEmailStatus] = useState("Все")
     const [dateFrom, setDateFrom] = useState("")
     const [dateTo, setDateTo] = useState("")
-    const [sortOrder, setSortOrder] = useState("asc") // asc = сначала старые, desc = сначала новые
+    const [sortOrder, setSortOrder] = useState("desc") // asc = сначала старые, desc = сначала новые
 
     const navigate = useNavigate()
 
