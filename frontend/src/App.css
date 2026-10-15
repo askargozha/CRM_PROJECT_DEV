@@ -44,21 +44,6 @@
     );
 }
 
-html,
-body {
-    min-height: 100%;
-}
-
-body {
-    margin: 0;
-    background: #EDF4FB;
-    background-image:
-        radial-gradient(circle at 12% 18%, rgba(244, 183, 64, 0.18), transparent 25%),
-        radial-gradient(circle at 82% 10%, rgba(79, 200, 232, 0.16), transparent 20%),
-        radial-gradient(circle at 88% 88%, rgba(121, 185, 60, 0.14), transparent 22%);
-    background-attachment: fixed;
-}
-
 /* ================================ Layout ================================ */
 
 .app {
@@ -2565,4 +2550,208 @@ tbody tr:last-child td {
     .content {
         padding: 20px 18px 32px;
     }
+}
+
+
+/* ==========================================================================
+   2. АДАПТАЦИЯ ТЁМНОЙ ТЕМЫ (SMART AQMOLA)
+   ========================================================================== */
+html[data-theme="dark"] {
+    --mist: #0b1329;
+    --surface: #1e293b;
+    --navy: #0b1329;
+
+    --ink-900: #f8fafc;
+    --ink-700: #cbd5e1;
+    --ink-500: #94a3b8;
+    --ink-300: #475569;
+    --border: #334155;
+
+    --sky: #38bdf8;
+}
+
+/* Основной фон сайта */
+html[data-theme="dark"] body {
+    background-color: #0b132d;
+    background-image: none;
+    color: var(--ink-900);
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] .content {
+    color: var(--ink-900);
+}
+
+/* Поля ввода, даты, фильтры и модальные окна */
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .modal-input,
+html[data-theme="dark"] .modal-textarea {
+    background-color: var(--surface) !important;
+    color: var(--ink-900) !important;
+    border-color: var(--border) !important;
+    color-scheme: dark;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+    color: var(--ink-500) !important;
+    opacity: 1;
+}
+
+/* Таблицы */
+html[data-theme="dark"] .clickable-row:hover {
+    background-color: #334155 !important;
+}
+
+/* Страница «Информационная безопасность» */
+html[data-theme="dark"] .policy-card {
+    background-color: var(--surface) !important;
+    color: var(--ink-900) !important;
+    border-color: var(--border) !important;
+}
+
+html[data-theme="dark"] .policy-card p,
+html[data-theme="dark"] .policy-card li,
+html[data-theme="dark"] .policy-card h4 {
+    color: var(--ink-700) !important;
+}
+
+html[data-theme="dark"] .policy-card h3 {
+    color: var(--ink-900) !important;
+}
+
+/* Контейнер Power BI в аналитике */
+.powerbi-embed-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    padding: 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.powerbi-embed-card h2,
+.powerbi-embed-card h3 {
+    color: var(--ink-900);
+}
+
+html[data-theme="dark"] .powerbi-embed-card {
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+/* Иконки графиков в аналитике */
+.chart-title-icon,
+.card-icon-svg {
+    color: var(--sky);
+}
+
+/* Плашка «Уведомление оператору» */
+html[data-theme="dark"] details summary:hover,
+html[data-theme="dark"] .ticket-details-container details summary:hover,
+html[data-theme="dark"] .collapsible-toggle:hover {
+    background-color: #334155 !important;
+    color: var(--ink-900) !important;
+}
+
+html[data-theme="dark"] details[open] summary {
+    background-color: var(--surface) !important;
+    color: var(--ink-900) !important;
+}
+
+html[data-theme="dark"] .collapsible-toggle:hover span:not([style*="color"]) {
+    color: var(--ink-900) !important;
+}
+
+/* Плавное переключение темы */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+/* Кастомизация скроллбара для темной темы */
+html[data-theme="dark"] {
+    /* Для Firefox */
+    scrollbar-color: #334155 #0b1329;
+}
+
+/* Для Chrome, Edge, Safari (весь сайт) */
+html[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #0b1329; /* Цвет подложки скролла (под цвет темного фона) */
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #334155; /* Цвет самого ползунка */
+    border-radius: 4px;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #475569; /* Цвет ползунка при наведении */
+}
+/* ==========================================
+   Единая система кнопок (Design System)
+   ========================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  line-height: 1.4;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 1. Основная кнопка (Primary) */
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* 2. Второстепенная кнопка (Secondary) */
+.btn-secondary {
+  background-color: var(--surface, #1e293b);
+  color: var(--ink-700, #cbd5e1);
+  border-color: var(--border, #334155);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--border, #334155);
+  color: #ffffff;
+}
+
+/* 3. Опасная кнопка (Danger) */
+.btn-danger {
+  background-color: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
 }
