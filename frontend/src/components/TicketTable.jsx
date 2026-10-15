@@ -71,6 +71,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
     const [status, setStatus] = useState("Все")
     const [operator, setOperator] = useState("Все")
     const [district, setDistrict] = useState("Все")
+    const [category, setCategory] = useState("Все")
     const [emailStatus, setEmailStatus] = useState("Все")
     const [dateFrom, setDateFrom] = useState("")
     const [dateTo, setDateTo] = useState("")
@@ -93,6 +94,15 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
         return Array.from(unique).sort()
     }, [tickets, t])
 
+    const categoryOptions = useMemo(() => {
+        const unique = new Set()
+        tickets.forEach((ticket) => {
+            const cat = ticket.ai_category || ticket.category
+            if (cat) unique.add(cat)
+        })
+        return Array.from(unique).sort()
+    }, [tickets])
+
     const filteredTickets = tickets
         .filter(ticket =>
             (ticket.applicant || "")
@@ -111,6 +121,11 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
             district === "Все"
                 ? true
                 : (ticket.district || t("filter_district_unknown")) === district
+        )
+        .filter(ticket =>
+            category === "Все"
+                ? true
+                : (ticket.ai_category || ticket.category) === category
         )
         .filter(ticket => {
             if (emailStatus === "Все") return true
@@ -132,6 +147,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
         setStatus("Все")
         setOperator("Все")
         setDistrict("Все")
+        setCategory("Все")
         setEmailStatus("Все")
         setDateFrom("")
         setDateTo("")
@@ -139,7 +155,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
 
     const hasActiveFilters =
         search || status !== "Все" || operator !== "Все" || district !== "Все" ||
-        emailStatus !== "Все" || dateFrom || dateTo
+        category !== "Все" || emailStatus !== "Все" || dateFrom || dateTo
 
     return (
         <div className="table-container">
@@ -197,6 +213,19 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                 >
                     <option value="Все">{t("filter_district_all")}</option>
                     {districtOptions.map((value) => (
+                        <option key={value} value={value}>
+                            {value}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    className="filter"
+                >
+                    <option value="Все">Все категории</option>
+                    {categoryOptions.map((value) => (
                         <option key={value} value={value}>
                             {value}
                         </option>
