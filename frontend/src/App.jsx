@@ -102,6 +102,22 @@ function CRMLayout() {
     const [now, setNow] = useState(new Date())
     const [unsentCount, setUnsentCount] = useState(0)
 
+    // Управление тёмной темой
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem("theme") || "light"
+    })
+
+    const toggleTheme = () => {
+        const newTheme = theme === "light" ? "dark" : "light"
+        setTheme(newTheme)
+        localStorage.setItem("theme", newTheme)
+        document.documentElement.setAttribute("data-theme", newTheme)
+    }
+
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme)
+    }, [theme])
+
     useEffect(() => {
         const timer = setInterval(
             () => setNow(new Date()),
@@ -204,6 +220,17 @@ function CRMLayout() {
                 </div>
 
                 <div className="user-panel">
+                    {/* Кнопка переключения темы */}
+                    <button
+                        type="button"
+                        className="lang-btn"
+                        onClick={toggleTheme}
+                        title="Переключить тему"
+                        style={{ fontSize: "16px", padding: "4px 8px" }}
+                    >
+                        {theme === "light" ? "🌙" : "☀️"}
+                    </button>
+
                     <LanguageSwitcher />
 
                     <div className="user-info">
