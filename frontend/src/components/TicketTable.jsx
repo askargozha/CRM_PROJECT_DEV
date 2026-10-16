@@ -5,21 +5,6 @@ import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
 import { translatePriority } from "../i18n/helpers"
 
-// Словарь понятных названий ошибок
-const ERROR_LABELS = {
-    "operator_not_found": "Нет оператора или адреса",
-    "ai_failed": "ИИ не сработал",
-    "moderation_required": "Требуется модерация",
-    "rate_limit_exceeded": "Лимит писем",
-    "smtp_error": "Ошибка почты",
-    "email_failed": "Ошибка отправки почты"
-}
-
-export const formatEmailError = (errorKey) => {
-    if (!errorKey) return "Ошибка отправки"
-    return ERROR_LABELS[errorKey] || errorKey
-}
-
 function getTimeAgo(dateString) {
     if (!dateString) return "—"
     const created = new Date(dateString)
@@ -75,6 +60,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
     const [emailStatus, setEmailStatus] = useState("Все")
     const [dateFrom, setDateFrom] = useState("")
     const [dateTo, setDateTo] = useState("")
+    const [sortOrder, setSortOrder] = useState("desc")
 
     const navigate = useNavigate()
 
@@ -141,6 +127,16 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
             if (dateTo && ticketDate > dateTo) return false
             return true
         })
+        .sort((a, b) => {
+            const parseDate = (t) => {
+                const str = t.created_date || t.date || t.created_at
+                return str ? new Date(str).getTime() : 0
+            }
+            const dateA = parseDate(a)
+            const dateB = parseDate(b)
+
+            return sortOrder === "asc" ? dateA - dateB : dateB - dateA
+        })
 
     function handleResetFilters() {
         setSearch("")
@@ -151,11 +147,12 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
         setEmailStatus("Все")
         setDateFrom("")
         setDateTo("")
+        setSortOrder("desc")
     }
 
     const hasActiveFilters =
         search || status !== "Все" || operator !== "Все" || district !== "Все" ||
-        category !== "Все" || emailStatus !== "Все" || dateFrom || dateTo
+        category !== "Все" || emailStatus !== "Все" || dateFrom || dateTo || sortOrder !== "desc"
 
     return (
         <div className="table-container">
@@ -230,6 +227,15 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                             {value}
                         </option>
                     ))}
+                </select>
+
+                <select
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value)}
+                    className="filter"
+                >
+                    <option value="asc">Сначала старые</option>
+                    <option value="desc">Сначала новые</option>
                 </select>
 
                 <select
@@ -315,7 +321,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
                                         <td>{ticket.ai_category || ticket.category || "—"}</td>
                                         <td style={{ color: "#d9534f", fontWeight: "500" }}>
-                                            {formatEmailError(ticket.email_error)}
+                                            {ticket.email_error || ticket.error_message || "Ошибка отправки"}
                                         </td>
                                         <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
                                         <td>
