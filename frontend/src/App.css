@@ -2695,3 +2695,61 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569; /* Цвет ползунка при наведении */
 }
+
+/* ==========================================================================
+   5. ЕДИНЫЙ ИНДИКАТОР ЗАГРУЗКИ (LOADING SPINNER)
+   ========================================================================== */
+
+/* Контейнер для центрирования спиннера на странице/в карточке */
+.loading-container,
+.spinner-container,
+.loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  width: 100%;
+  min-height: 160px;
+}
+
+/* Сам вращающийся кружок (спиннер) - Светлая тема */
+.loading-spinner,
+.spinner,
+.loader {
+  width: 38px;
+  height: 38px;
+  border: 3.5px solid #e0f2fe;
+  border-top-color: #0284c7; /* Основной синий акцент */
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Анимация вращения */
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Подпись под индикатором */
+.loading-text,
+.spinner-text {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* Адаптация индикатора для ТЁМНОЙ ТЕМЫ */
+html[data-theme="dark"] .loading-spinner,
+html[data-theme="dark"] .spinner,
+html[data-theme="dark"] .loader {
+  border: 3.5px solid rgba(56, 189, 248, 0.15); /* Полупрозрачная темная подложка */
+  border-top-color: #38bdf8; /* Яркий неоново-голубой цвет верхушки */
+}
+
+html[data-theme="dark"] .loading-text,
+html[data-theme="dark"] .spinner-text {
+  color: #94a3b8; /* Светлый читаемый серый цвет текста */
+}
