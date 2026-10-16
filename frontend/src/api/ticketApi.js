@@ -259,3 +259,23 @@ export async function downloadTicketsReport(dateFrom, dateTo, format = "pdf") {
 
     window.URL.revokeObjectURL(downloadUrl)
 }
+export async function resendTicketEmail(ticketId, data = {}) {
+  const response = await fetch(`${API_URL}/tickets/${ticketId}/send-email`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    let errorMessage = "Ошибка при повторной отправке письма";
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.detail || errorMessage;
+    } catch {
+      // сервер не вернул JSON
+    }
+    throw new Error(errorMessage);
+  }
+
+  return await response.json();
+}
