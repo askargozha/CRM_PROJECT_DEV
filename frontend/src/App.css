@@ -2695,3 +2695,73 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569; /* Цвет ползунка при наведении */
 }
+
+/* ==========================================================================
+   6. ЕДИНЫЙ СТАНДАРТ ПУСТОГО СОСТОЯНИЯ (EMPTY STATE)
+   ========================================================================== */
+
+/* Контейнер пустого состояния */
+.empty-state,
+.no-data-container,
+.table-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 20px;
+  width: 100%;
+  min-height: 220px;
+  background-color: var(--surface, #ffffff);
+  border: 1px dashed var(--border, #cbd5e1);
+  border-radius: var(--radius-md, 8px);
+  margin: 16px 0;
+}
+
+/* Иконка или иллюстрация в пустом состоянии */
+.empty-state-icon,
+.no-data-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  color: var(--ink-500, #94a3b8);
+  opacity: 0.8;
+}
+
+/* Заголовок сообщения */
+.empty-state-title,
+.no-data-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-900, #0f172a);
+  margin-bottom: 6px;
+}
+
+/* Описание / пояснение */
+.empty-state-description,
+.no-data-text {
+  font-size: 14px;
+  color: var(--ink-500, #64748b);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+
+/* ==========================================================================
+   АДАПТАЦИЯ EMPTY STATE ДЛЯ ТЁМНОЙ ТЕМЫ
+   ========================================================================== */
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .no-data-container,
+html[data-theme="dark"] .table-empty-state {
+  background-color: var(--surface, #1e293b);
+  border-color: var(--border, #334155);
+}
+
+html[data-theme="dark"] .empty-state-title,
+html[data-theme="dark"] .no-data-title {
+  color: var(--ink-900, #f8fafc);
+}
+
+html[data-theme="dark"] .empty-state-description,
+html[data-theme="dark"] .no-data-text {
+  color: var(--ink-500, #94a3b8);
+}
