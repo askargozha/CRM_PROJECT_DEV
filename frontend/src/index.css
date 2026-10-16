@@ -1,3 +1,79 @@
+/* ==========================================================================
+   ГЛОБАЛЬНЫЕ CSS-ПЕРЕМЕННЫЕ (ЦВЕТА, ОТСТУПЫ, СКРУГЛЕНИЯ, ТЕНИ И ШРИФТЫ)
+   ========================================================================== */
+:root {
+    --navy: #1B3768;
+    --navy-deep: #101E38;
+    --sky: #2E7FC1;
+    --cyan: #4FC8E8;
+    --gold: #F4B740;
+    --amber: #E58F2A;
+    --green: #79B93C;
+
+    --mist: #F3F7FB;
+    --surface: #FFFFFF;
+
+    --ink-900: #12233F;
+    --ink-700: #2C3E5C;
+    --ink-500: #5C6E88;
+    --ink-300: #9FB0C6;
+    --border: #DFE7F1;
+
+    /* Из dev (переменные темы и размеров) */
+    --bg-primary: #F3F7FB;
+    --bg-surface: #ffffff;
+    --bg-hover: #e2e8f0;
+  
+    --text-primary: #12233F;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+  
+    --border-color: #cbd5e1;
+  
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 3px rgba(16, 30, 56, 0.07);
+    --shadow-md: 0 10px 28px rgba(16, 30, 56, 0.10);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    --font-display: "Manrope", "Inter", sans-serif;
+    --font-body: "Inter", "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-surface: #1e293b;
+    --bg-hover: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --border-color: #334155;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #60a5fa;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -11,82 +87,18 @@ body,
     min-height: 100vh;
 }
 
-/* ==========================================================================
-   ГЛОБАЛЬНЫЕ CSS-ПЕРЕМЕННЫЕ (ЦВЕТА, ОТСТУПЫ, СКРУГЛЕНИЯ, ТЕНИ И ШРИФТЫ)
-   ========================================================================== */
-:root {
-  /* Цвета (из первой задачи) */
-  --bg-primary: #F3F7FB;
-  --bg-surface: #ffffff;
-  --bg-hover: #e2e8f0;
-  
-  --text-primary: #16233D;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  
-  --border-color: #cbd5e1;
-  
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-
-  /* === НОВОЕ ДЛЯ ВТОРОЙ ЗАДАЧИ === */
-  
-  /* Размеры шрифтов */
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 24px;
-  --font-size-xxl: 32px;
-
-  /* Отступы (Spacing) */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-xxl: 48px;
-
-  /* Скругления углов (Border Radius) */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
-
-  /* Тени (Box Shadow) */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Тёмная тема */
-[data-theme="dark"] {
-  --bg-primary: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-hover: #334155;
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
-  
-  --border-color: #334155;
-  
-  --color-primary: #3b82f6;
-  --color-primary-hover: #60a5fa;
-}
-
 body {
-    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    font-family: var(--font-body);
     font-size: var(--font-size-md);
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    background: var(--mist);
+    color: var(--ink-900);
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s, color 0.3s;
 }
 
 ::selection {
-    background: #4FC8E8;
-    color: #0E1F3D;
+    background: var(--cyan);
+    color: var(--navy-deep);
 }
 
 button,

@@ -25,3 +25,5 @@ frontend/dist/
 # Windows
 Thumbs.db
 Desktop.ini
+venv/
+*.db
