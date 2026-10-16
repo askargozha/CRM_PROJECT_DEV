@@ -70,6 +70,10 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
 
     const handleResend = async (e, ticketId) => {
         e.stopPropagation()
+        
+        const isConfirmed = window.confirm("Вы уверены, что хотите переотправить письмо?")
+        if (!isConfirmed) return
+
         try {
             setActionError(null)
             setResendingId(ticketId)
@@ -351,26 +355,28 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                             {ticket.email_error || ticket.error_message || "Ошибка отправки"}
                                         </td>
                                         <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
-                                        <td style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                            <button
-                                                onClick={(e) => handleResend(e, ticket.id)}
-                                                disabled={resendingId === ticket.id}
-                                                className="action-link"
-                                                style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
-                                            >
-                                                {resendingId === ticket.id ? "Отправка..." : "Отправить повторно"}
-                                            </button>
-                                            <span>|</span>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    navigate(`/tickets/${ticket.id}`)
-                                                }}
-                                                className="action-link"
-                                                style={{ border: "none", background: "none", cursor: "pointer" }}
-                                            >
-                                                Проверить
-                                            </button>
+                                        <td>
+                                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                                <button
+                                                    onClick={(e) => handleResend(e, ticket.id)}
+                                                    disabled={resendingId === ticket.id}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                >
+                                                    {resendingId === ticket.id ? "Отправка..." : "Отправить повторно"}
+                                                </button>
+                                                <span>|</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(`/tickets/${ticket.id}`)
+                                                    }}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer" }}
+                                                >
+                                                    Проверить
+                                                </button>
+                                            </div>
                                         </td>
                                     </>
                                 ) : (
