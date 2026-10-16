@@ -2695,3 +2695,120 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569; /* Цвет ползунка при наведении */
 }
+
+/* ==========================================================================
+   4. ЕДИНЫЙ СТАНДАРТ БЕЙДЖЕЙ СТАТУСОВ (STATUS BADGES)
+   ========================================================================== */
+
+/* Базовый класс для любого статус-бейджа */
+.badge,
+.status-badge,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  border-radius: 9999px; /* Скругленные края (pill shape) */
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* 1. Новый / В ожидании (Желтоватый / Синеватый нейтральный) */
+.badge-new,
+.status-new,
+.badge-pending,
+.status-pending {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* 2. В работе / Обрабатывается (Синий) */
+.badge-in-progress,
+.status-in-progress,
+.badge-processing {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* 3. Успешно / Выполнено / Активно (Зеленый) */
+.badge-success,
+.status-success,
+.badge-completed,
+.status-active {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* 4. Ошибка / Отменено / Срочно (Красный) */
+.badge-danger,
+.status-danger,
+.badge-cancelled,
+.badge-error,
+.status-urgent {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* 5. Предупреждение / В архиве (Серый / Оранжевый) */
+.badge-warning,
+.status-warning,
+.badge-archive {
+  background-color: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+
+/* ==========================================================================
+   АДАПТАЦИЯ БЕЙДЖЕЙ ДЛЯ ТЁМНОЙ ТЕМЫ
+   ========================================================================== */
+html[data-theme="dark"] .badge-new,
+html[data-theme="dark"] .status-new,
+html[data-theme="dark"] .badge-pending,
+html[data-theme="dark"] .status-pending {
+  background-color: rgba(29, 78, 216, 0.2);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+html[data-theme="dark"] .badge-in-progress,
+html[data-theme="dark"] .status-in-progress,
+html[data-theme="dark"] .badge-processing {
+  background-color: rgba(3, 105, 161, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+html[data-theme="dark"] .badge-success,
+html[data-theme="dark"] .status-success,
+html[data-theme="dark"] .badge-completed,
+html[data-theme="dark"] .status-active {
+  background-color: rgba(21, 128, 61, 0.2);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+html[data-theme="dark"] .badge-danger,
+html[data-theme="dark"] .status-danger,
+html[data-theme="dark"] .badge-cancelled,
+html[data-theme="dark"] .badge-error,
+html[data-theme="dark"] .status-urgent {
+  background-color: rgba(185, 28, 28, 0.2);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+html[data-theme="dark"] .badge-warning,
+html[data-theme="dark"] .status-warning,
+html[data-theme="dark"] .badge-archive {
+  background-color: rgba(71, 85, 105, 0.2);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.3);
+}
