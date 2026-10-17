@@ -196,6 +196,9 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
     const [analyzingId, setAnalyzingId] = useState(null)
     const [actionError, setActionError] = useState(null)
 
+    // Внутреннее состояние скрытых (успешно обработанных) тикетов для мгновенного удаления из таблицы
+    const [removedTicketIds, setRemovedTicketIds] = useState([])
+
     const navigate = useNavigate()
 
     const handleResend = async (e, ticketId) => {
@@ -208,7 +211,14 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
         try {
             setActionError(null)
             setResendingId(ticketId)
+
+            // Отправляем запрос на сервер
             await resendTicketEmail(ticketId)
+
+            // Мгновенно убираем из таблицы на фронтенде
+            setRemovedTicketIds((prev) => [...prev, ticketId])
+
+            // Обновляем список с сервера
             if (onRefresh) {
                 await onRefresh()
             }
@@ -230,7 +240,14 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
         try {
             setActionError(null)
             setAnalyzingId(ticketId)
+
+            // Отправляем запрос на сервер
             await reanalyzeTicket(ticketId)
+
+            // Мгновенно убираем из таблицы на фронтенде
+            setRemovedTicketIds((prev) => [...prev, ticketId])
+
+            // Обновляем список с сервера
             if (onRefresh) {
                 await onRefresh()
             }
@@ -268,6 +285,8 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
     }, [tickets])
 
     const filteredTickets = tickets
+        // Исключаем тикеты, обработанные во время текущей сессии
+        .filter(ticket => !removedTicketIds.includes(ticket.id))
         .filter(ticket =>
             (ticket.applicant || "")
                 .toLowerCase()
