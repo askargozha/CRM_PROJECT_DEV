@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 
 import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
 import { translatePriority } from "../i18n/helpers"
-import { resendTicketEmail } from "../api/ticketApi"
+import { resendTicketEmail, reanalyzeTicket } from "../api/ticketApi"
 
 function getTimeAgo(dateString) {
     if (!dateString) return "—"
@@ -47,6 +47,135 @@ function exportToExcel(tickets, filenamePrefix, t) {
     })
 }
 
+// Компонент выпадающего меню действий
+function ActionDropdown({ ticket, resendingId, analyzingId, handleResend, handleReanalyze, navigate }) {
+    const [isOpen, setIsOpen] = useState(false)
+    const dropdownRef = useRef(null)
+
+    // Закрываем меню при клике вне его области
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
+
+    const toggleMenu = (e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        setIsOpen((prev) => !prev)
+    }
+
+    return (
+        <div ref={dropdownRef} style={{ position: "relative", display: "inline-block" }}>
+            <button
+                onClick={toggleMenu}
+                style={{
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px",
+                    padding: "4px 10px",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: "500",
+                    color: "#333",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px"
+                }}
+            >
+                Действия <span style={{ fontSize: "10px" }}>▼</span>
+            </button>
+
+            {isOpen && (
+                <div
+                    style={{
+                        position: "absolute",
+                        right: 0,
+                        top: "100%",
+                        marginTop: "4px",
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+                        borderRadius: "6px",
+                        zIndex: 100,
+                        minWidth: "180px",
+                        overflow: "hidden",
+                        border: "1px solid #e2e8f0"
+                    }}
+                >
+                    <button
+                        onClick={(e) => {
+                            setIsOpen(false)
+                            handleResend(e, ticket.id)
+                        }}
+                        disabled={resendingId === ticket.id}
+                        style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "8px 12px",
+                            border: "none",
+                            background: "none",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            color: "#0275d8",
+                            borderBottom: "1px solid #f0f0f0"
+                        }}
+                    >
+                        {resendingId === ticket.id ? "Отправка..." : "✉ Отправить повторно"}
+                    </button>
+
+                    {(ticket.ai_status === "failed" || !ticket.ai_analyzed) && (
+                        <button
+                            onClick={(e) => {
+                                setIsOpen(false)
+                                handleReanalyze(e, ticket.id)
+                            }}
+                            disabled={analyzingId === ticket.id}
+                            style={{
+                                width: "100%",
+                                textAlign: "left",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                cursor: "pointer",
+                                fontSize: "13px",
+                                color: "#28a745",
+                                borderBottom: "1px solid #f0f0f0"
+                            }}
+                        >
+                            {analyzingId === ticket.id ? "Анализ..." : "🤖 Перезапустить ИИ-анализ"}
+                        </button>
+                    )}
+
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            e.preventDefault()
+                            setIsOpen(false)
+                            navigate(`/tickets/${ticket.id}`)
+                        }}
+                        style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "8px 12px",
+                            border: "none",
+                            background: "none",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            color: "#333"
+                        }}
+                    >
+                        🔍 Проверить
+                    </button>
+                </div>
+            )}
+        </div>
+    )
+}
+
 function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, onRefresh }) {
     const { t } = useLanguage()
 
@@ -64,13 +193,15 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
     const [sortOrder, setSortOrder] = useState("desc")
 
     const [resendingId, setResendingId] = useState(null)
+    const [analyzingId, setAnalyzingId] = useState(null)
     const [actionError, setActionError] = useState(null)
 
     const navigate = useNavigate()
 
     const handleResend = async (e, ticketId) => {
         e.stopPropagation()
-        
+        e.preventDefault()
+
         const isConfirmed = window.confirm("Вы уверены, что хотите переотправить письмо?")
         if (!isConfirmed) return
 
@@ -86,6 +217,28 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
             setActionError(err.message || "Не удалось отправить письмо повторно")
         } finally {
             setResendingId(null)
+        }
+    }
+
+    const handleReanalyze = async (e, ticketId) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        const isConfirmed = window.confirm("Перезапустить ИИ-анализ для этого обращения?")
+        if (!isConfirmed) return
+
+        try {
+            setActionError(null)
+            setAnalyzingId(ticketId)
+            await reanalyzeTicket(ticketId)
+            if (onRefresh) {
+                await onRefresh()
+            }
+        } catch (err) {
+            console.error("Ошибка при перезапуске ИИ-анализа:", err)
+            setActionError(err.message || "Не удалось перезапустить ИИ-анализ")
+        } finally {
+            setAnalyzingId(null)
         }
     }
 
@@ -355,28 +508,15 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                             {ticket.email_error || ticket.error_message || "Ошибка отправки"}
                                         </td>
                                         <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
-                                        <td>
-                                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                                <button
-                                                    onClick={(e) => handleResend(e, ticket.id)}
-                                                    disabled={resendingId === ticket.id}
-                                                    className="action-link"
-                                                    style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
-                                                >
-                                                    {resendingId === ticket.id ? "Отправка..." : "Отправить повторно"}
-                                                </button>
-                                                <span>|</span>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        navigate(`/tickets/${ticket.id}`)
-                                                    }}
-                                                    className="action-link"
-                                                    style={{ border: "none", background: "none", cursor: "pointer" }}
-                                                >
-                                                    Проверить
-                                                </button>
-                                            </div>
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            <ActionDropdown
+                                                ticket={ticket}
+                                                resendingId={resendingId}
+                                                analyzingId={analyzingId}
+                                                handleResend={handleResend}
+                                                handleReanalyze={handleReanalyze}
+                                                navigate={navigate}
+                                            />
                                         </td>
                                     </>
                                 ) : (
