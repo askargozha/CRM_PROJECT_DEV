@@ -123,6 +123,7 @@ class TicketAnalyticsItem(BaseModel):
     ai_category: str | None = None
     operator: str | None = None
     ai_operator: str | None = None
+    source: str | None = None
     created_date: date
     email_sent: bool = False
 
