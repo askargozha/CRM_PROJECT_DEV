@@ -2695,3 +2695,41 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569; /* Цвет ползунка при наведении */
 }
+/* Жёлтый баннер с предупреждением */
+.unsent-warning-banner {
+    background-color: #FFFBEB;
+    border-left: 4px solid #F59E0B;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.unsent-warning-icon {
+    font-size: 20px;
+    margin-right: 12px;
+}
+
+.unsent-warning-title {
+    color: #92400E;
+    font-size: 14px;
+    display: block;
+}
+
+.unsent-warning-text {
+    color: #B45309;
+    font-size: 13.5px;
+}
+
+/* Кнопка переанализа ИИ */
+.reanalyze-ai-btn {
+    margin-left: 12px;
+}
+
+/* Предупреждение модерации ИИ */
+.ai-moderation-warning {
+    color: #B4402F;
+    font-weight: 600;
+} 
