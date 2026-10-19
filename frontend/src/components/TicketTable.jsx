@@ -4,7 +4,11 @@ import { useNavigate } from "react-router-dom"
 import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
 import { translatePriority } from "../i18n/helpers"
+ feature/reanalyze-ai-button
 import { resendTicketEmail, reanalyzeTicket } from "../api/ticketApi"
+
+import { resendTicketEmail } from "../api/ticketApi"
+ dev
 
 function getTimeAgo(dateString) {
     if (!dateString) return "—"
@@ -47,6 +51,7 @@ function exportToExcel(tickets, filenamePrefix, t) {
     })
 }
 
+ feature/reanalyze-ai-button
 // Компонент выпадающего меню действий
 function ActionDropdown({ ticket, resendingId, analyzingId, handleResend, handleReanalyze, navigate }) {
     const [isOpen, setIsOpen] = useState(false)
@@ -176,6 +181,8 @@ function ActionDropdown({ ticket, resendingId, analyzingId, handleResend, handle
     )
 }
 
+
+ dev
 function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, onRefresh }) {
     const { t } = useLanguage()
 
@@ -193,15 +200,20 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
     const [sortOrder, setSortOrder] = useState("desc")
 
     const [resendingId, setResendingId] = useState(null)
+ feature/reanalyze-ai-button
     const [analyzingId, setAnalyzingId] = useState(null)
+dev
     const [actionError, setActionError] = useState(null)
 
     const navigate = useNavigate()
 
     const handleResend = async (e, ticketId) => {
         e.stopPropagation()
+ feature/reanalyze-ai-button
         e.preventDefault()
 
+        
+dev
         const isConfirmed = window.confirm("Вы уверены, что хотите переотправить письмо?")
         if (!isConfirmed) return
 
@@ -220,6 +232,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
         }
     }
 
+ feature/reanalyze-ai-button
     const handleReanalyze = async (e, ticketId) => {
         e.stopPropagation()
         e.preventDefault()
@@ -242,6 +255,8 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
         }
     }
 
+
+ dev
     const operatorOptions = useMemo(() => {
         const unique = new Set()
         tickets.forEach((ticket) => {
@@ -508,6 +523,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                             {ticket.email_error || ticket.error_message || "Ошибка отправки"}
                                         </td>
                                         <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
+feature/reanalyze-ai-button
                                         <td onClick={(e) => e.stopPropagation()}>
                                             <ActionDropdown
                                                 ticket={ticket}
@@ -517,6 +533,30 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                                 handleReanalyze={handleReanalyze}
                                                 navigate={navigate}
                                             />
+
+                                        <td>
+                                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                                <button
+                                                    onClick={(e) => handleResend(e, ticket.id)}
+                                                    disabled={resendingId === ticket.id}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                >
+                                                    {resendingId === ticket.id ? "Отправка..." : "Отправить повторно"}
+                                                </button>
+                                                <span>|</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(`/tickets/${ticket.id}`)
+                                                    }}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer" }}
+                                                >
+                                                    Проверить
+                                                </button>
+                                            </div>
+ dev
                                         </td>
                                     </>
                                 ) : (
