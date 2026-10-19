@@ -13,6 +13,7 @@ export const translations = {
     nav_home: { ru: "Главная", kz: "Басты бет" },
     nav_my_tickets: { ru: "Мои обращения", kz: "Менің өтініштерім" },
     nav_tickets: { ru: "Обращения", kz: "Хабарламалар" },
+    nav_unsent_tickets: { ru: "Неотправленные", kz: "Жіберілмегендер" },
     nav_users: { ru: "Пользователи", kz: "Пайдаланушылар" },
     nav_staff: { ru: "Сотрудники", kz: "Қызметкерлер" },
     nav_email_operators: { ru: "Операторы рассылки", kz: "Таратылым операторлары" },

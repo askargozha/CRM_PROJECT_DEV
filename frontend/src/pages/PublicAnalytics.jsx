@@ -15,6 +15,18 @@ const WIDGET_SCRIPT_SRC = `${API_URL}/widget.js`
 function PublicAnalytics() {
 
     const { t, language, toggleLanguage } = useLanguage()
+    
+    // Состояние тёмной темы
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem("theme") || "light"
+    })
+
+    const toggleTheme = () => {
+        const newTheme = theme === "light" ? "dark" : "light"
+        setTheme(newTheme)
+        localStorage.setItem("theme", newTheme)
+        document.documentElement.setAttribute("data-theme", newTheme)
+    }
 
     useEffect(() => {
 
@@ -45,9 +57,7 @@ function PublicAnalytics() {
 
     }, [])
 
-    // Синхронизация языка страницы с языком виджета: он сам не следит
-    // за переключателем на сайте (см. обсуждение выше про data-lang +
-    // reload()), поэтому обновляем атрибут вручную при каждом тогле.
+    // Синхронизация языка
     useEffect(() => {
         const container = document.getElementById("smart-aqmola-widget")
         if (container) {
@@ -55,6 +65,15 @@ function PublicAnalytics() {
         }
         window.SmartAqmolaWidget && window.SmartAqmolaWidget.reload()
     }, [language])
+
+    // Синхронизация темы
+    useEffect(() => {
+        const container = document.getElementById("smart-aqmola-widget")
+        if (container) {
+            container.setAttribute("data-theme", theme)
+        }
+        window.SmartAqmolaWidget && window.SmartAqmolaWidget.reload()
+    }, [theme])
 
     return (
         <div className="public-analytics-page">
@@ -66,13 +85,25 @@ function PublicAnalytics() {
                     <span>SMART AQMOLA — {t("public_analytics_title")}</span>
                 </div>
 
-                <button
-                    type="button"
-                    className="header-channel-btn"
-                    onClick={toggleLanguage}
-                >
-                    <strong>{language === "kz" ? "РУС" : "ҚАЗ"}</strong>
-                </button>
+                <div style={{ display: "flex", gap: "10px" }}>
+                    {/* Кнопка переключения темы */}
+                    <button
+                        type="button"
+                        className="header-channel-btn"
+                        onClick={toggleTheme}
+                    >
+                        <strong>{theme === "light" ? "🌙" : "☀️"}</strong>
+                    </button>
+
+                    {/* Кнопка языка */}
+                    <button
+                        type="button"
+                        className="header-channel-btn"
+                        onClick={toggleLanguage}
+                    >
+                        <strong>{language === "kz" ? "РУС" : "ҚАЗ"}</strong>
+                    </button>
+                </div>
 
             </header>
 
@@ -80,7 +111,7 @@ function PublicAnalytics() {
                 <div
                     id="smart-aqmola-widget"
                     data-lang={language === "kz" ? "kz" : "ru"}
-                    data-theme="light"
+                    data-theme={theme}
                 />
             </main>
 
