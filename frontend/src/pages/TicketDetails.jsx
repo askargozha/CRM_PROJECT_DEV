@@ -95,6 +95,12 @@ function TicketDetails() {
         item => item.id === ticketId
     )
 
+    // Если сотрудник открывает обращение со статусом "Новое" — один
+    // раз переводим его в "В работе". Условие "ticket.status ===
+    // Новое" — ключевое: срабатывает только пока статус реально
+    // "Новое", поэтому уже закрытое обращение при повторном открытии
+    // назад в работу не переключится — этот случай специально не
+    // должен повторяться.
     useEffect(() => {
 
         if (!ticket || isCitizen) {
@@ -255,12 +261,21 @@ function TicketDetails() {
         )
     }
 
+    // Редактировать/удалять могут: администратор — всегда, специалист
+    // — только своё собственное обращение (то, которое он сам создал),
+    // остальные обращения специалисту видны, но менять/удалять их
+    // нельзя. Роль "Пользователь" тут не участвует вообще — у неё
+    // кнопок редактирования/удаления никогда не было.
     const canEditOrDelete =
         !isCitizen && (
             currentUser?.role_name !== SPECIALIST_ROLE_NAME ||
             ticket.created_by_user_id === currentUser?.id
         )
 
+    // Назначать/менять исполнителя может только администратор —
+    // специалист видит, кто назначен (см. строку "Назначенный
+    // сотрудник" ниже, она видна всем сотрудникам), но менять сам
+    // не может.
     const canAssignUser =
         !isCitizen &&
         currentUser?.role_name !== SPECIALIST_ROLE_NAME
@@ -515,19 +530,7 @@ function TicketDetails() {
                         {t("details_ticket_number")} №{ticket.id}
                     </h2>
 
-                    {canEditOrDelete && (
-                        <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
-                            <button className="edit-btn" onClick={() => setShowModal(true)}>
-                                Изменить
-                            </button>
-                            <button className="delete-btn" onClick={handleDeleteTicket}>
-                                Удалить
-                            </button>
-                        </div>
-                    )}
-
                 </div>
-
                 {!ticket.email_sent && (
                     <div style={{
                         backgroundColor: "#FFFBEB",
@@ -988,7 +991,9 @@ function TicketDetails() {
                                 setShowTelegramReplyForm((value) => !value)
                             }
                         >
-                            <h3 style={{ margin: 0 }}>Telegram</h3>
+                            <h3 style={{ margin: 0 }}>
+                                {t("details_telegram_reply_title")}
+                            </h3>
                             <span className="collapsible-arrow">
                                 {showTelegramReplyForm ? "▲" : "▼"}
                             </span>
@@ -996,77 +1001,208 @@ function TicketDetails() {
 
                         {showTelegramReplyForm && (
                             <div style={{ marginTop: 12 }}>
+
+                                <p style={{ color: "var(--ink-500)", fontSize: 13.5, marginBottom: 10 }}>
+                                    {t("details_telegram_reply_hint")}
+                                </p>
+
+                                {telegramReplyError && (
+                                    <p style={{ color: "#B4402F", fontSize: 13.5, marginBottom: 10 }}>
+                                        {telegramReplyError}
+                                    </p>
+                                )}
+
+                                {telegramReplyMessage && !telegramReplyError && (
+                                    <p style={{ color: "#2E7D32", fontSize: 13.5, marginBottom: 10 }}>
+                                        ✅ {telegramReplyMessage}
+                                    </p>
+                                )}
+
                                 <textarea
                                     className="modal-textarea"
-                                    style={{ width: "100%", minHeight: 80, marginBottom: 10 }}
-                                    placeholder="Ответ гражданину в Telegram..."
+                                    style={{ width: "100%", minHeight: 80 }}
+                                    placeholder={t("details_telegram_reply_placeholder")}
                                     value={telegramReplyText}
-                                    onChange={(e) => setTelegramReplyText(e.target.value)}
+                                    onChange={(event) =>
+                                        setTelegramReplyText(event.target.value)
+                                    }
                                 />
-                                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
-                                    <input type="file" accept="image/*" onChange={(e) => setTelegramReplyPhoto(e.target.files[0] || null)} />
-                                    <button className="edit-btn" onClick={handleSendTelegramReply} disabled={sendingTelegramReply}>
-                                        {sendingTelegramReply ? "Отправка..." : "Отправить ответ"}
+
+                                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 10 }}>
+
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(event) =>
+                                            setTelegramReplyPhoto(
+                                                event.target.files?.[0] || null
+                                            )
+                                        }
+                                    />
+
+                                    <button
+                                        className="edit-btn"
+                                        onClick={handleSendTelegramReply}
+                                        disabled={sendingTelegramReply}
+                                    >
+                                        {sendingTelegramReply
+                                            ? t("details_email_sending")
+                                            : t("details_telegram_reply_send")}
                                     </button>
+
                                 </div>
-                                {telegramReplyMessage && <p style={{ color: "#2E7D32", marginTop: 8 }}>{telegramReplyMessage}</p>}
-                                {telegramReplyError && <p style={{ color: "#B4402F", marginTop: 8 }}>{telegramReplyError}</p>}
+
                             </div>
                         )}
 
                     </div>
                 )}
 
+                {ticket.attachments && ticket.attachments.length > 0 && (
+                    <div className="detail-description">
+
+                        <h3>📎 {t("details_attachments")} ({ticket.attachments.length})</h3>
+
+                        <div className="attachments-grid">
+                            {ticket.attachments.map((attachment) => (
+                                <button
+                                    key={attachment.id}
+                                    type="button"
+                                    className="attachment-thumb"
+                                    onClick={() =>
+                                        setOpenPhoto(
+                                            `${API_URL}/uploads/${attachment.file_path}`
+                                        )
+                                    }
+                                >
+                                    <img
+                                        src={`${API_URL}/uploads/${attachment.file_path}`}
+                                        alt={t("details_attachments")}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+
+                    </div>
+                )}
+
                 <div className="detail-description">
 
-                    <h3>Комментарии ({comments.length})</h3>
+                    <h3>💬 {t("details_comments")}</h3>
 
                     {commentsLoading ? (
-                        <p>Загрузка комментариев...</p>
+                        <p>{t("details_comments_loading")}</p>
+                    ) : comments.length === 0 ? (
+                        <p>{t("details_comments_empty")}</p>
                     ) : (
-                        <div>
+                        <div className="comments-list">
                             {comments.map((comment) => (
-                                <div key={comment.id} style={{ marginBottom: 12, borderBottom: "1px solid #eee", paddingBottom: 8 }}>
-                                    <strong>{comment.user?.full_name || comment.user?.username || "Пользователь"}</strong>
-                                    <span style={{ fontSize: 12, color: "#888", marginLeft: 8 }}>{comment.created_at}</span>
-                                    <p style={{ margin: "4px 0 0 0" }}>{comment.text}</p>
+                                <div
+                                    className="comment-item"
+                                    key={comment.id}
+                                >
+                                    <div className="comment-item-header">
+                                        <strong>
+                                            {comment.author?.full_name ||
+                                                t("details_comment_default_author")}
+                                        </strong>
+                                        <span>
+                                            {new Date(
+                                                comment.created_at
+                                            ).toLocaleString(language === "kz" ? "kk-KZ" : "ru-RU")}
+                                        </span>
+                                    </div>
+                                    <p>{comment.text}</p>
                                 </div>
                             ))}
-
-                            <div style={{ marginTop: 16 }}>
-                                <textarea
-                                    className="modal-textarea"
-                                    style={{ width: "100%", minHeight: 60, marginBottom: 8 }}
-                                    placeholder="Написать комментарий..."
-                                    value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
-                                />
-                                <button className="edit-btn" onClick={handleAddComment} disabled={postingComment}>
-                                    {postingComment ? "Отправка..." : "Добавить комментарий"}
-                                </button>
-                                {commentError && <p style={{ color: "#B4402F", marginTop: 8 }}>{commentError}</p>}
-                            </div>
                         </div>
                     )}
 
+                    {commentError && (
+                        <p style={{ color: "#B4402F", fontSize: 13.5, marginTop: 10 }}>
+                            {commentError}
+                        </p>
+                    )}
+
+                    <textarea
+                        className="modal-textarea"
+                        style={{ width: "100%", minHeight: 70, marginTop: 12 }}
+                        placeholder={t("details_comment_placeholder")}
+                        value={newComment}
+                        onChange={(event) =>
+                            setNewComment(event.target.value)
+                        }
+                    />
+
+                    <button
+                        className="create-btn"
+                        style={{ marginTop: 10 }}
+                        onClick={handleAddComment}
+                        disabled={postingComment}
+                    >
+                        {postingComment
+                            ? t("details_email_sending")
+                            : t("details_add_comment")}
+                    </button>
+
                 </div>
+
+                {canEditOrDelete && (
+                    <div className="detail-actions">
+
+                        <button
+                            className="edit-btn"
+                            onClick={() =>
+                                setShowModal(true)
+                            }
+                        >
+                            {t("details_edit")}
+                        </button>
+
+                        <button
+                            className="delete-btn"
+                            onClick={
+                                handleDeleteTicket
+                            }
+                        >
+                            {t("details_delete")}
+                        </button>
+
+                    </div>
+                )}
+
 
             </div>
 
             {showModal && (
                 <CreateTicketModal
+                    tickets={tickets}
                     ticket={ticket}
-                    onClose={() => setShowModal(false)}
-                    onSaved={(updated) => updateTicket(updated)}
+                    onUpdate={updateTicket}
+                    onClose={() =>
+                        setShowModal(false)
+                    }
                 />
             )}
 
             {openPhoto && (
-                <div className="photo-modal-overlay" onClick={() => setOpenPhoto(null)}>
-                    <div className="photo-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="photo-modal-close" onClick={() => setOpenPhoto(null)}>✕</button>
-                        <img src={openPhoto} alt="Увеличенный просмотр" className="photo-modal-img" />
-                    </div>
+                <div
+                    className="modal-overlay"
+                    onClick={() => setOpenPhoto(null)}
+                >
+                    <img
+                        src={openPhoto}
+                        alt={t("details_attachments")}
+                        className="photo-lightbox-image"
+                        onClick={(event) => event.stopPropagation()}
+                    />
+                    <button
+                        type="button"
+                        className="close-btn photo-lightbox-close"
+                        onClick={() => setOpenPhoto(null)}
+                    >
+                        ✕
+                    </button>
                 </div>
             )}
 
