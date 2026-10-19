@@ -531,6 +531,28 @@ function TicketDetails() {
                     </h2>
 
                 </div>
+                {!ticket.email_sent && (
+                    <div style={{
+                        backgroundColor: "#FFFBEB",
+                        borderLeft: "4px solid #F59E0B",
+                        padding: "14px 18px",
+                        borderRadius: "0 8px 8px 0",
+                        marginBottom: "20px",
+                        display: "flex",
+                        alignItems: "center",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                    }}>
+                        <span style={{ fontSize: "20px", marginRight: "12px" }}>⚠️</span>
+                        <div>
+                            <strong style={{ color: "#92400E", fontSize: "14px", display: "block" }}>
+                                Не отправлено оператору
+                            </strong>
+                            <span style={{ color: "#B45309", fontSize: "13.5px" }}>
+                                {ticket.email_error ? `Причина: ${ticket.email_error}` : "Причина: письмо оператору ещё не было отправлено"}
+                            </span>
+                        </div>
+                    </div>
+                )}
 
                 <div className="detail-columns">
 
