@@ -2708,3 +2708,58 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
 }
 
 
+/* ==========================================================================
+   9. АДАПТИВНОСТЬ ТАБЛИЦ НА МОБИЛЬНЫХ УСТРОЙСТВАХ (RESPONSIVE TABLES)
+   ========================================================================== */
+
+/* Обёртка таблицы — обеспечивает горизонтальный скролл на узких экранах */
+.table-responsive,
+.table-container,
+.ticket-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border, #cbd5e1);
+}
+
+/* Базовые стили таблицы внутри контейнера */
+.table-responsive table,
+.table-container table,
+.ticket-table {
+  width: 100%;
+  min-width: 650px; /* Гарантирует, что колонки не сжимаются в кашу */
+  border-collapse: collapse;
+}
+
+/* Кастомизация горизонтального скроллбара таблицы */
+.table-responsive::-webkit-scrollbar,
+.table-container::-webkit-scrollbar,
+.ticket-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb,
+.table-container::-webkit-scrollbar-thumb,
+.ticket-table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--ink-300, #cbd5e1);
+  border-radius: 3px;
+}
+
+
+/* ==========================================================================
+   АДАПТАЦИЯ ДЛЯ ТЁМНОЙ ТЕМЫ
+   ========================================================================== */
+html[data-theme="dark"] .table-responsive,
+html[data-theme="dark"] .table-container,
+html[data-theme="dark"] .ticket-table-wrapper {
+  border-color: var(--border, #334155);
+}
+
+html[data-theme="dark"] .table-responsive::-webkit-scrollbar-thumb,
+html[data-theme="dark"] .table-container::-webkit-scrollbar-thumb,
+html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
+  background: #334155;
+}
