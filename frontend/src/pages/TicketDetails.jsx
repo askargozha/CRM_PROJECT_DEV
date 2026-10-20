@@ -531,7 +531,26 @@ function TicketDetails() {
                     </h2>
 
                 </div>
-
+{/* Жёлтая плашка предупреждения о неотправленном письме */}
+{!isCitizen && (ticket.email_sent === false || ticket.email_error) && (
+    <div style={{
+        backgroundColor: "#fff3cd",
+        color: "#856404",
+        border: "1px solid #ffeeba",
+        padding: "12px 16px",
+        borderRadius: "6px",
+        marginBottom: "16px",
+        fontSize: "14px",
+        lineHeight: "1.5"
+    }}>
+        <strong>⚠️ {t("details_email_status_not_sent") || "Не отправлено оператору"}</strong>
+        <div>
+            {ticket.email_error 
+                ? `Причина: ${ticket.email_error}`
+                : `Причина: Для оператора «${ticket.operator || "—"}» не настроен email — добавьте его на странице «Операторы рассылки»`}
+        </div>
+    </div>
+)}
                 <div className="detail-columns">
 
                     <div className="detail-card">
