@@ -671,66 +671,53 @@ tbody tr:last-child td {
     font-size: 13.5px;
 }
 
-/* ==========================================================================
-   Status Badges (Единый стиль бейджей статусов с поддержкой темной темы)
-   ========================================================================== */
+/* ================================ Status ================================= */
 
-/* Общие стили для всех бейджей статусов */
-.status-new,
-.status-progress,
-.status-closed {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
-/* 1. Статус "Новое" (Синий/Голубой) */
+.status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+}
 .status-new {
-  background-color: var(--status-new-bg, #e0f2fe);
-  color: var(--status-new-text, #0369a1);
-  border: 1px solid var(--status-new-border, #bae6fd);
+    background: var(--status-new-bg, rgba(244, 183, 64, 0.16));
+    color: var(--status-new-text, #A66A0C);
 }
 
-/* 2. Статус "В работе" (Желтый/Оранжевый) */
 .status-progress {
-  background-color: var(--status-progress-bg, #fef3c7);
-  color: var(--status-progress-text, #b45309);
-  border: 1px solid var(--status-progress-border, #fde68a);
+    background: var(--status-progress-bg, rgba(46, 127, 193, 0.14));
+    color: var(--status-progress-text, var(--sky));
 }
 
-/* 3. Статус "Закрыто" (Зеленый/Серо-зеленый) */
 .status-closed {
-  background-color: var(--status-closed-bg, #dcfce7);
-  color: var(--status-closed-text, #15803d);
-  border: 1px solid var(--status-closed-border, #bbf7d0);
+    background: var(--status-closed-bg, rgba(121, 185, 60, 0.16));
+    color: var(--status-closed-text, #4C7C21);
 }
 
-/* ==========================================================================
-   Адаптация статусов под ТЁМНУЮ ТЕМУ (data-theme="dark")
-   ========================================================================== */
+/* Адаптация статусов под тёмную тему */
 html[data-theme="dark"] {
-  /* Переменные для бейджа "Новое" */
-  --status-new-bg: rgba(14, 165, 233, 0.15);
-  --status-new-text: #38bdf8;
-  --status-new-border: rgba(56, 189, 248, 0.3);
+    --status-new-bg: rgba(244, 183, 64, 0.22);
+    --status-new-text: #fcd34d;
 
-  /* Переменные для бейджа "В работе" */
-  --status-progress-bg: rgba(245, 158, 11, 0.15);
-  --status-progress-text: #fbbf24;
-  --status-progress-border: rgba(251, 191, 36, 0.3);
+    --status-progress-bg: rgba(46, 127, 193, 0.25);
+    --status-progress-text: #38bdf8;
 
-  /* Переменные для бейджа "Закрыто" */
-  --status-closed-bg: rgba(34, 197, 94, 0.15);
-  --status-closed-text: #4ade80;
-  --status-closed-border: rgba(74, 222, 128, 0.3);
+    --status-closed-bg: rgba(121, 185, 60, 0.22);
+    --status-closed-text: #86efac;
 }
+
 /* ============================ Search / filters ============================ */
 
 .table-controls {
@@ -2719,4 +2706,5 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569; /* Цвет ползунка при наведении */
 }
+
 
