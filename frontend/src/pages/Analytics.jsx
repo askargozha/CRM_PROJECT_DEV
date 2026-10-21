@@ -261,6 +261,11 @@ function Analytics() {
         [t]
     )
 
+    // Как показывать источник «Внешняя CRM» в базе это ЕКЦ 109
+    function formatSourceLabel(label) {
+        return label === "Внешняя CRM" ? "ЕКЦ 109" : label
+    }
+
     function applyPreset(preset) {
 
         const today = new Date()
@@ -555,6 +560,7 @@ function Analytics() {
                             tickets={periodSummary}
                             prevTickets={previousSummary}
                             getLabel={getSourceLabel}
+                            formatLabel={formatSourceLabel}
                             emptyText={t("chart_no_data")}
                             noDataText={t("analytics_change_no_data")}
                         />
