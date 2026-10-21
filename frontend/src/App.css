@@ -2828,3 +2828,70 @@ html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
     white-space: nowrap;
     text-align: right;
 }
+
+/* Аналитика: тепловая таблица */
+.analytics-heatmap-wrap {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.heat-table-scroll {
+    overflow-x: auto;
+}
+
+.heat-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+    font-size: 13px;
+}
+
+.heat-table th {
+    font-weight: 600;
+    color: var(--ink-700);
+    text-align: center;
+    font-size: 12px;
+}
+
+.heat-table .heat-row-head {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.heat-head-btn {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.heat-head-btn:hover {
+    color: var(--sky);
+    background: var(--mist);
+}
+
+.heat-cell {
+    min-width: 44px;
+    height: 36px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.heat-cell-empty {
+    background: var(--mist);
+    color: var(--ink-300);
+    font-weight: 400;
+}
+
+.heat-cell-click {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.heat-cell-click:hover {
+    transform: scale(1.06);
+}

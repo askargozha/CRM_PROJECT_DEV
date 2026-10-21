@@ -6,6 +6,7 @@ import MessagesDensityChart from "../components/MessagesDensityChart"
 import DistrictBarChart from "../components/DistrictBarChart"
 import DistrictPieChart from "../components/DistrictPieChart"
 import BreakdownCard from "../components/BreakdownCard"
+import DistrictCategoryHeatmap from "../components/DistrictCategoryHeatmap"
 import { AlertIcon, CheckIcon, DotIcon, InboxIcon, MapPinIcon } from "../components/icons"
 import { useAuth } from "../context/AuthContext"
 import { useLanguage } from "../context/LanguageContext"
@@ -568,7 +569,11 @@ function Analytics() {
                     </div>
                 </div>
             )}
-
+            {!summaryLoading && (
+                <div className="analytics-heatmap-wrap">
+                    <DistrictCategoryHeatmap tickets={periodSummary} />
+                </div>
+            )}
         </div>
     )
 }

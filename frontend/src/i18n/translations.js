@@ -322,6 +322,8 @@ export const translations = {
     analytics_period_pick_dates: { ru: "Выберите обе даты, чтобы применить период", kz: "Кезеңді қолдану үшін екі күнді де таңдаңыз" },
     analytics_change_vs_prev: { ru: "к прошлому периоду", kz: "алдыңғы кезеңмен салыстырғанда" },
     analytics_change_no_data: { ru: "нет данных за прошлый период", kz: "алдыңғы кезеңде дерек жоқ" },
+    analytics_heatmap_title: { ru: "Район × категория", kz: "Аудан × санат" },
+    analytics_category_unknown: { ru: "Не определена", kz: "Анықталмаған" },
     analytics_breakdown_operators: { ru: "По операторам связи", kz: "Байланыс операторлары бойынша" },
     analytics_breakdown_districts: { ru: "По районам", kz: "Аудандар бойынша" },
     analytics_breakdown_sources: { ru: "По источникам обращений", kz: "Өтініш көздері бойынша" },
