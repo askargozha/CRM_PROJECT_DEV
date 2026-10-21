@@ -2908,3 +2908,20 @@ html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
     background: var(--mist);
     outline: none;
 }
+
+@media (max-width: 375px) {
+    .period-filter-buttons .period-btn {
+        flex: 1 1 auto;
+    }
+
+    .chart-bars-compact .chart-row.breakdown-row {
+        grid-template-columns: 72px 1fr auto 54px;
+        gap: 6px;
+    }
+
+    .heat-table .heat-row-head {
+        position: sticky;
+        left: 0;
+        background: var(--surface);
+    }
+}
