@@ -47,11 +47,18 @@ function exportToExcel(tickets, filenamePrefix, t) {
     })
 }
 
-function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, onRefresh }) {
-    const { t } = useLanguage()
-
-    const hidePhone = hideColumns.includes("phone")
-    const hidePriority = hideColumns.includes("priority")
+function TicketTable({
+  tickets = [],
+  title,
+  hideColumns = [],
+  handleReanalyzeAI,
+  onReanalyzeAI,
+  isUnsentView = false
+}) {
+  const { t, language } = useLanguage()
+ const isUnsent = isUnsentView || title?.toLowerCase()?.includes("неотправлен") || window.location.pathname.includes("unsent")
+  const hidePhone = hideColumns?.includes("phone")
+  const hidePriority = hideColumns?.includes("priority")
 
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState("Все")
@@ -211,74 +218,89 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                 />
 
                 <select
-                    value={status}
-                    onChange={(event) => setStatus(event.target.value)}
-                    className="filter"
-                >
-                    <option value="Все">{t("filter_status_all")}</option>
-                    <option value="Новое">{t("status_new")}</option>
-                    <option value="В работе">{t("status_progress")}</option>
-                    <option value="Закрыто">{t("status_closed")}</option>
-                </select>
+  value={status}
+  onChange={(event) => setStatus(event.target.value)}
+  className="filter"
+>
+  <option value="Все">{t("filter_status_all") || "Барлық мәртебелер"}</option>
+  <option value="Новое">{t("status_new") || "Жаңа"}</option>
+  <option value="В работе">{t("status_progress") || "Жұмыста"}</option>
+  <option value="Закрыто">{t("status_closed") || "Жабық"}</option>
+</select>
 
                 <select
-                    value={operator}
-                    onChange={(event) => setOperator(event.target.value)}
-                    className="filter"
-                >
-                    <option value="Все">{t("filter_operator_all")}</option>
-                    {operatorOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
-                    ))}
-                </select>
+  value={operator}
+  onChange={(event) => setOperator(event.target.value)}
+  className="filter"
+>
+  <option value="Все">{t("filter_operator_all") || "Барлық операторлар"}</option>
+  {operatorOptions.map((value) => (
+    <option key={value} value={value}>
+      {value}
+    </option>
+  ))}
+</select>
 
                 <select
-                    value={district}
-                    onChange={(event) => setDistrict(event.target.value)}
-                    className="filter"
-                >
-                    <option value="Все">{t("filter_district_all")}</option>
-                    {districtOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
-                    ))}
-                </select>
+  value={district}
+  onChange={(event) => setDistrict(event.target.value)}
+  className="filter"
+>
+  <option value="Все">{t("filter_district_all") || "Барлық аудандар"}</option>
+  {districtOptions.map((value) => (
+    <option key={value} value={value}>
+      {value}
+    </option>
+  ))}
+</select>
 
-                <select
-                    value={category}
-                    onChange={(event) => setCategory(event.target.value)}
-                    className="filter"
-                >
-                    <option value="Все">Все категории</option>
-                    {categoryOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
-                    ))}
-                </select>
+<select
+  value={category}
+  onChange={(event) => setCategory(event.target.value)}
+  className="filter"
+>
+  <option value="Все">
+    {t("filter_category_all") || (language === "kz" ? "Барлық санаттар" : "Все категории")}
+  </option>
+  {categoryOptions.map((val) => {
+    // Сопоставляем русский текст с бэкенда с ключом из translations.js
+    const ruToKeyMap = {
+      "Плохое качество связи": "category_bad_quality",
+      "Нет доступа к интернету": "category_no_internet",
+      "Медленный интернет": "category_slow_internet",
+      "Обрыв линии / авария": "category_line_break",
+      "Проблема с SIM-картой": "category_sim_problem",
+      "Тарификация и биллинг": "category_billing",
+      "Иное": "category_other"
+    };
 
-                <select
-                    value={sortOrder}
-                    onChange={(event) => setSortOrder(event.target.value)}
-                    className="filter"
-                >
-                    <option value="asc">Сначала старые</option>
-                    <option value="desc">Сначала новые</option>
-                </select>
+    const targetKey = ruToKeyMap[val] || (val.startsWith("cat_") ? val.replace("cat_", "category_") : val);
 
-                <select
-                    value={emailStatus}
-                    onChange={(event) => setEmailStatus(event.target.value)}
-                    className="filter"
-                >
-                    <option value="Все">{t("filter_email_all")}</option>
-                    <option value="Отправлено">{t("filter_email_sent")}</option>
-                    <option value="Не отправлено">{t("filter_email_not_sent")}</option>
-                </select>
+    return (
+      <option key={val} value={val}>
+        {t(targetKey) || val}
+      </option>
+    );
+  })}
+</select>
+               <select
+  value={sortOrder}
+  onChange={(event) => setSortOrder(event.target.value)}
+  className="filter"
+>
+  <option value="asc">{t("filter_sort_oldest") || "Әуелі ескілері"}</option>
+  <option value="desc">{t("filter_sort_newest") || "Әуелі жаңалары"}</option>
+</select>
 
+<select
+  value={emailStatus}
+  onChange={(event) => setEmailStatus(event.target.value)}
+  className="filter"
+>
+  <option value="Все">{t("filter_email_all") || "Хат: барлығы"}</option>
+  <option value="Отправлено">{t("filter_email_sent") || "Хат: жіберілді"}</option>
+  <option value="Не отправлено">{t("filter_email_unsent") || "Хат: жіберілмеді"}</option>
+</select>
                 <label className="date-filter">
                     {t("filter_date_from")}
                     <input
@@ -311,32 +333,31 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
             </div>
 
             <table>
-                <thead>
-                    {isUnsentView ? (
-                        <tr>
-                            <th>№</th>
-                            <th>Район</th>
-                            <th>Оператор</th>
-                            <th>Тема / Категория</th>
-                            <th>Причина задержки</th>
-                            <th>Сколько висит</th>
-                            <th>Действие</th>
-                        </tr>
-                    ) : (
-                        <tr>
-                            <th>{t("table_col_number")}</th>
-                            <th>{t("table_col_applicant")}</th>
-                            {!hidePhone && <th>{t("table_col_phone")}</th>}
-                            <th>{t("table_col_district")}</th>
-                            <th>{t("table_col_operator")}</th>
-                            <th>{t("table_col_category_ai")}</th>
-                            <th>{t("table_col_status")}</th>
-                            {!hidePriority && <th>{t("table_col_priority")}</th>}
-                            <th>{t("table_col_date")}</th>
-                        </tr>
-                    )}
-                </thead>
-
+            <thead>
+  {isUnsent ? (
+    <tr>
+      <th>{t("table_col_number") || "№"}</th>
+      <th>{t("col_district") || t("table_col_district") || (language === "kz" ? "АУДАН" : "РАЙОН")}</th>
+      <th>{t("col_operator") || t("table_col_operator") || (language === "kz" ? "ОПЕРАТОР" : "ОПЕРАТОР")}</th>
+      <th>{t("col_category") || t("table_col_category_ai") || (language === "kz" ? "ТАҚЫРЫП / САНАТ" : "КАТЕГОРИЯ")}</th>
+      <th>{t("col_delay_reason") || (language === "kz" ? "КІДІРУ СЕБЕБІ" : "ПРИЧИНА ЗАДЕРЖКИ")}</th>
+      <th>{t("col_pending_time") || (language === "kz" ? "ҚАНША УАҚЫТ ТҰР" : "СКОЛЬКО ВИСИТ")}</th>
+      <th>{t("usermgmt_actions") || (language === "kz" ? "ӘРЕКЕТТЕР" : "ДЕЙСТВИЯ")}</th>
+    </tr>
+  ) : (
+    <tr>
+      <th>{t("table_col_number") || "№"}</th>
+      <th>{t("table_col_applicant") || "ЗАЯВИТЕЛЬ"}</th>
+      <th>{t("table_col_phone") || "ТЕЛЕФОН"}</th>
+      <th>{t("table_col_district") || "РАЙОН"}</th>
+      <th>{t("table_col_operator") || "ОПЕРАТОР"}</th>
+      <th>{t("table_col_category_ai") || "САНАТ (ЖИ)"}</th>
+      <th>{t("table_col_status") || "СТАТУС"}</th>
+      <th>{t("table_col_priority") || "ПРИОРИТЕТ"}</th>
+      <th>{t("table_col_date") || "ДАТА"}</th>
+    </tr>
+  )}
+</thead>
                 <tbody>
                     {filteredTickets.length > 0 ? (
                         filteredTickets.map((ticket) => (
@@ -345,40 +366,97 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                 onClick={() => navigate(`/tickets/${ticket.id}`)}
                                 className="clickable-row"
                             >
-                                {isUnsentView ? (
-                                    <>
-                                        <td>#{ticket.id}</td>
-                                        <td>{ticket.district || "Не указан"}</td>
-                                        <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || ticket.category || "—"}</td>
-                                        <td style={{ color: "#d9534f", fontWeight: "500" }}>
-                                            {ticket.email_error || ticket.error_message || "Ошибка отправки"}
-                                        </td>
-                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
-                                        <td>
-                                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                                <button
-                                                    onClick={(e) => handleResend(e, ticket.id)}
-                                                    disabled={resendingId === ticket.id}
-                                                    className="action-link"
-                                                    style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
-                                                >
-                                                    {resendingId === ticket.id ? "Отправка..." : "Отправить повторно"}
-                                                </button>
-                                                <span>|</span>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        navigate(`/tickets/${ticket.id}`)
-                                                    }}
-                                                    className="action-link"
-                                                    style={{ border: "none", background: "none", cursor: "pointer" }}
-                                                >
-                                                    Проверить
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </>
+                                {isUnsent ? (
+  <>
+  <td>#{ticket.id}</td>
+  <td>
+    {ticket.district || 
+      (language === "kz" ? "Көрсетілмеген" : "Не указан")}
+  </td>
+  <td>
+    {ticket.operator || 
+      (language === "kz" ? "Анықталмаған" : "Не определён")}
+  </td>
+  <td>
+  {(() => {
+    const rawCategory = ticket.ai_category || ticket.category;
+    if (!rawCategory) return "-";
+
+    const ruToKeyMap = {
+      "Плохое качество связи": "category_bad_quality",
+      "Нет доступа к интернету": "category_no_internet",
+      "Медленный интернет": "category_slow_internet",
+      "Обрыв линии / авария": "category_line_break",
+      "Проблема с SIM-картой": "category_sim_problem",
+      "Тарификация и биллинг": "category_billing",
+      "Иное": "category_other"
+    };
+
+    const targetKey = ruToKeyMap[rawCategory] || (rawCategory.startsWith("cat_") ? rawCategory.replace("cat_", "category_") : rawCategory);
+
+    return t(targetKey) || rawCategory;
+  })()}
+</td>
+  <td style={{ color: "#d9534f", fontWeight: "500" }}>
+  {ticket.email_error || ticket.error_message ? (
+    (ticket.email_error?.includes("не настроен email") || ticket.error_message?.includes("не настроен email")) ? (
+      (t("delay_reason_no_email") || "Для оператора «{operator}» не настроен email — добавьте его на странице «Операторы рассылки».").replace("{operator}", ticket.operator || "оператора")
+    ) : (
+      ticket.email_error || ticket.error_message
+    )
+  ) : (
+    t("send_error") || (language === "kz" ? "Жіберу қатесі" : "Ошибка отправки")
+  )}
+</td>
+  <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
+  <td>
+    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+      <button
+        onClick={(e) => handleResend(e, ticket.id)}
+        disabled={resendingId === ticket.id}
+      >
+        {resendingId === ticket.id
+          ? (t("details_email_sending") || (language === "kz" ? "Жіберілуде..." : "Отправка..."))
+          : (t("action_resend") || t("details_email_resend") || (language === "kz" ? "Қайта жіберу" : "Отправить повторно"))}
+      </button>
+      <span>|</span>
+
+    {/* Кнопка Переанализировать ИИ (показывается ТОЛЬКО при сбое ИИ) */}
+    {(
+      !ticket.ai_category || 
+      ticket.ai_category === "Не определено ИИ" || 
+      ticket.ai_category === "category_undetermined" || 
+      ticket.ai_category === "cat_undetermined"
+    ) && (
+      <>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (typeof handleReanalyzeAI === "function") handleReanalyzeAI(ticket.id);
+            else if (typeof onReanalyzeAI === "function") onReanalyzeAI(ticket.id);
+            else if (typeof onReanalyze === "function") onReanalyze(ticket.id);
+            else if (typeof handleReanalyze === "function") handleReanalyze(ticket.id);
+          }}
+          title={t("action_reanalyze_ai") || "Перезапустить ИИ анализ"}
+        >
+          {t("action_reanalyze_ai_short") || "ИИ 🔄"}
+        </button>
+        <span>|</span>
+      </>
+    )}
+
+    {/* Кнопка Проверить */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate(`/tickets/${ticket.id}`);
+      }}
+    >
+      {t("action_check") || (language === "kz" ? "Тексеру" : "Проверить")}
+    </button>
+  </div>
+</td>
+</>
                                 ) : (
                                     <>
                                         <td>#{ticket.id}</td>
@@ -386,7 +464,26 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                         {!hidePhone && <td>{ticket.phone || "—"}</td>}
                                         <td>{ticket.district || t("filter_district_unknown")}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || "—"}</td>
+                                        <td>
+  {(() => {
+    const rawCategory = ticket.ai_category || ticket.category;
+    if (!rawCategory) return "-";
+
+    const ruToKeyMap = {
+      "Плохое качество связи": "category_bad_quality",
+      "Нет доступа к интернету": "category_no_internet",
+      "Медленный интернет": "category_slow_internet",
+      "Обрыв линии / авария": "category_line_break",
+      "Проблема с SIM-картой": "category_sim_problem",
+      "Тарификация и биллинг": "category_billing",
+      "Иное": "category_other"
+    };
+
+    const targetKey = ruToKeyMap[rawCategory] || (rawCategory.startsWith("cat_") ? rawCategory.replace("cat_", "category_") : rawCategory);
+
+    return t(targetKey) || rawCategory;
+  })()}
+</td>
                                         <td>
                                             <StatusBadge status={ticket.status} />
                                         </td>
@@ -400,7 +497,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={isUnsentView ? 7 : 9} className="empty-table">
+                            <td colSpan={isUnsent ?7 : 9} className="empty-table">
                                 {tickets.length === 0
                                     ? t("table_empty_no_tickets")
                                     : t("table_empty_no_match")}

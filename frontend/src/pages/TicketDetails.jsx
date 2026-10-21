@@ -532,27 +532,30 @@ function TicketDetails() {
 
                 </div>
                 {!ticket.email_sent && (
-                    <div style={{
-                        backgroundColor: "#FFFBEB",
-                        borderLeft: "4px solid #F59E0B",
-                        padding: "14px 18px",
-                        borderRadius: "0 8px 8px 0",
-                        marginBottom: "20px",
-                        display: "flex",
-                        alignItems: "center",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
-                    }}>
-                        <span style={{ fontSize: "20px", marginRight: "12px" }}>⚠️</span>
-                        <div>
-                            <strong style={{ color: "#92400E", fontSize: "14px", display: "block" }}>
-                                Не отправлено оператору
-                            </strong>
-                            <span style={{ color: "#B45309", fontSize: "13.5px" }}>
-                                {ticket.email_error ? `Причина: ${ticket.email_error}` : "Причина: письмо оператору ещё не было отправлено"}
-                            </span>
-                        </div>
-                    </div>
-                )}
+  <div style={{
+    backgroundColor: "#FFFBEB",
+    borderLeft: "4px solid #F59E0B",
+    padding: "14px 18px",
+    borderRadius: "0 8px 8px 0",
+    marginBottom: "20px",
+    display: "flex",
+    alignItems: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+  }}>
+    <span style={{ fontSize: "20px", marginRight: "12px" }}>⚠️</span>
+    <div>
+      <strong style={{ color: "#92400E", fontSize: "14px", display: "block" }}>
+        {t("details_email_status_not_sent") || "Операторға жіберілмеді"}
+      </strong>
+      <span style={{ color: "#B45309", fontSize: "13.5px" }}>
+        {ticket.email_error 
+          ? ticket.email_error 
+          : (t("delay_reason_no_email", { operator: ticket.operator }) || `Себебі: «${ticket.operator}» операторы үшін email бапталмаған — оны «Таратылым операторлары» бетінде қосыңыз.`)}
+      </span>
+    </div>
+  </div>
+)}
+                
 
                 <div className="detail-columns">
 
@@ -613,27 +616,29 @@ function TicketDetails() {
                         </div>
 
                         <div className="detail-row">
-                            <span>{t("details_current_status")}</span>
+  <span>
+    {t("details_current_status") || "Ағымдағы мәртебесі"}
+  </span>
 
-                            <StatusBadge
-                                status={ticket.status}
-                            />
-                        </div>
+  <StatusBadge
+    status={ticket.status}
+  />
+</div>
 
-                        {!isCitizen && (
-                            <div className="detail-row">
-                                <span>{t("details_change_status")}</span>
+{!isCitizen && (
+  <div className="detail-row">
+    <span>
+      {t("details_change_status") || t("details_change_status_label") || "Мәртебені өзгерту"}
+    </span>
 
-                                <select
-                                    className="status-select"
-                                    value={ticket.status}
-                                    onChange={
-                                        handleStatusChange
-                                    }
-                                >
-                                    <option value="Новое">
-                                        {t("status_new")}
-                                    </option>
+    <select
+      className="status-select"
+      value={ticket.status}
+      onChange={handleStatusChange}
+    >
+      <option value="Новое">
+        {t("status_new") || "Жаңа"}
+      </option>
 
                                     <option value="В работе">
                                         {t("status_progress")}
@@ -723,57 +728,53 @@ function TicketDetails() {
                         )}
 
                         <div className="detail-row">
-                            <span>
-                                {t("details_assigned_staff")}
-                            </span>
-
-                            <strong>
-                                {ticket.assigned_user
-                                    ?.full_name ||
-                                    ticket.assigned_user
-                                        ?.username ||
-                                    t("details_not_assigned")}
-                            </strong>
-                        </div>
-
-                        <div className="detail-row">
-                            <span>{t("table_col_priority")}</span>
-
-                            <strong>
-                                {ticket.priority
-                                    ? translatePriority(ticket.priority, t)
-                                    : t("filter_district_unknown")}
-                            </strong>
-                        </div>
+  <span>
+    {t("details_assigned_staff") || t("details_assigned_employee") || "Тағайындалған қызметкер"}
+  </span>
+  <strong>
+    {ticket.assigned_user?.full_name ||
+      ticket.assigned_user?.username ||
+      t("details_not_assigned") ||
+      t("details_unassigned") ||
+      "Тағайындалмаған"}
+  </strong>
+</div>
 
                         <div className="detail-row">
-                            <span>{t("table_col_date")}</span>
+  <span>{t("table_col_priority") || "Басымдық"}</span>
+  <strong>
+    {ticket.priority
+      ? (translatePriority ? translatePriority(ticket.priority, t) : ticket.priority)
+      : (t("details_not_specified") || "Көрсетілмеген")}
+  </strong>
+</div>
 
-                            <strong>
-                                {ticket.date ||
-                                    t("details_not_specified_f")}
-                            </strong>
-                        </div>
+<div className="detail-row">
+  <span>{t("table_col_date") || "Күні"}</span>
+  <strong>
+    {ticket.date || ticket.created_at || t("details_not_specified") || "Көрсетілмеген"}
+  </strong>
+</div>
 
                     </div>
 
                     <div className="detail-description detail-ai-column">
 
-                        <h3>
-                            🤖 {t("details_ai_analysis")}
-                            {!isCitizen && (
-                                <button
-                                    className="edit-btn"
-                                    style={{ marginLeft: 12 }}
-                                    onClick={handleReanalyze}
-                                    disabled={reanalyzing}
-                                >
-                                    {reanalyzing
-                                        ? t("details_analyzing")
-                                        : t("details_reanalyze")}
-                                </button>
-                            )}
-                        </h3>
+                     <h3>
+      🤖 {t("details_ai_analysis_title") || t("details_ai_analysis") || "ЖИ талдауы"}
+      {!isCitizen && (
+        <button
+          className="edit-btn"
+          style={{ marginLeft: 12 }}
+          onClick={handleReanalyze}
+          disabled={reanalyzing}
+        >
+          {reanalyzing
+            ? (t("details_analyzing") || "Талдау жүруде...")
+            : (t("details_ai_reanalyze") || t("details_reanalyze") || "Талдауды қайталау")}
+        </button>
+      )}
+    </h3>
 
                         {!ticket.ai_processed && (
                             <p>
