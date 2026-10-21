@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext"
 import { useLanguage } from "../context/LanguageContext"
 import TicketTable from "../components/TicketTable"
 import CreateTicketModal from "../components/CreateTicketModal"
+import ErrorState from "../components/ErrorState"
 
 const CITIZEN_ROLE_NAME = "Пользователь"
 
@@ -46,20 +47,12 @@ function Tickets() {
 
     if (error && tickets.length === 0) {
         return (
-            <div className="page-message error-message">
-
-                <h2>{t("tickets_load_error_title")}</h2>
-
-                <p>{error}</p>
-
-                <button
-                    className="retry-btn"
-                    onClick={loadTickets}
-                >
-                    {t("tickets_retry")}
-                </button>
-
-            </div>
+            <ErrorState
+                title={t("tickets_load_error_title")}
+                message={error}
+                retryLabel={t("tickets_retry")}
+                onRetry={loadTickets}
+            />
         )
     }
 
