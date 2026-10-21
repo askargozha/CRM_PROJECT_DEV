@@ -7,6 +7,7 @@ import {
     deleteEmailOperator
 } from "../api/emailOperatorsApi"
 import { useAuth } from "../context/AuthContext"
+import { useToast } from "../context/ToastContext"
 import { useTickets } from "../context/TicketContext"
 import { useLanguage } from "../context/LanguageContext"
 
@@ -230,6 +231,7 @@ function OperatorTicketsModal({ operator, tickets, onClose }) {
 }
 
 function EmailOperators() {
+    const notify = useToast()
 
     const { user: currentUser } = useAuth()
     const { tickets } = useTickets()
@@ -292,7 +294,7 @@ function EmailOperators() {
             await deleteEmailOperator(id)
             loadData()
         } catch (err) {
-            alert(err.message)
+            notify(err.message)
         }
     }
 
