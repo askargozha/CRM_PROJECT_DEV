@@ -97,7 +97,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
             setResendingId(null)
         }
     }
-const [reanalyzingId, setReanalyzingId] = useState(null)
+    const [reanalyzingId, setReanalyzingId] = useState(null)
 
     const handleReanalyze = async (e, ticketId) => {
         e.stopPropagation()
@@ -371,89 +371,89 @@ const [reanalyzingId, setReanalyzingId] = useState(null)
                 </thead>
 
                 <tbody>
-        {filteredTickets.length > 0 ? (
-          filteredTickets.map((ticket) => (
-            <tr
-              key={ticket.id}
-              onClick={() => navigate(`/tickets/${ticket.id}`)}
-              className="clickable-row"
-            >
-              {isUnsentView ? (
-                <>
-                  <td>#{ticket.id}</td>
-                  <td>{ticket.district || t("filter_district_unknown")}</td>
-                  <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                  <td>{ticket.ai_category || ticket.category || "-"}</td>
-                  <td style={{ color: "#d9534f", fontWeight: "500" }}>
-                    {ticket.email_error || ticket.error_message || "Ошибка отправки"}
-                  </td>
-                  <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                      <button
-                        onClick={(e) => handleResend(e, ticket.id)}
-                        disabled={resendingId === ticket.id}
-                        className="action-link"
-                        style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
-                      >
-                        {resendingId === ticket.id ? t("details_email_sending") : t("action_resend")}
-                      </button>
+                    {filteredTickets.length > 0 ? (
+                        filteredTickets.map((ticket) => (
+                            <tr
+                                key={ticket.id}
+                                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                className="clickable-row"
+                            >
+                                {isUnsentView ? (
+                                    <>
+                                        <td>#{ticket.id}</td>
+                                        <td>{ticket.district || t("filter_district_unknown")}</td>
+                                        <td>{ticket.operator || t("filter_operator_unknown")}</td>
+                                        <td>{ticket.ai_category || ticket.category || "-"}</td>
+                                        <td style={{ color: "#d9534f", fontWeight: "500" }}>
+                                            {ticket.email_error || ticket.error_message || "Ошибка отправки"}
+                                        </td>
+                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
+                                        <td>
+                                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                                <button
+                                                    onClick={(e) => handleResend(e, ticket.id)}
+                                                    disabled={resendingId === ticket.id}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                >
+                                                    {resendingId === ticket.id ? t("details_email_sending") : t("action_resend")}
+                                                </button>
 
-                      {ticket.ai_processed === false && (
-                        <>
-                          <span>|</span>
-                          <button
-                            onClick={(e) => handleReanalyze(e, ticket.id)}
-                            disabled={reanalyzingId === ticket.id}
-                            className="action-link"
-                            style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
-                          >
-                            {reanalyzingId === ticket.id ? t("details_analyzing") : t("reanalyze_ai_button")}
-                          </button>
-                        </>
-                      )}
+                                                {ticket.ai_processed === false && (
+                                                    <>
+                                                        <span>|</span>
+                                                        <button
+                                                            onClick={(e) => handleReanalyze(e, ticket.id)}
+                                                            disabled={reanalyzingId === ticket.id}
+                                                            className="action-link"
+                                                            style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                        >
+                                                            {reanalyzingId === ticket.id ? t("details_analyzing") : t("reanalyze_ai_button")}
+                                                        </button>
+                                                    </>
+                                                )}
 
-                      <span>|</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigate(`/tickets/${ticket.id}`)
-                        }}
-                        className="action-link"
-                        style={{ border: "none", background: "none", cursor: "pointer" }}
-                      >
-                        {t("action_check")}
-                      </button>
-                    </div>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td>#{ticket.id}</td>
-                  <td>{ticket.applicant}</td>
-                  {!hidePhone && <td>{ticket.phone || "-"}</td>}
-                  <td>{ticket.district || t("filter_district_unknown")}</td>
-                  <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                  <td>{ticket.ai_category || "-"}</td>
-                  <td>
-                    <StatusBadge status={ticket.status} />
-                  </td>
-                  {!hidePriority && (
-                    <td>{translatePriority(ticket.priority, t)}</td>
-                  )}
-                  <td>{ticket.date || ticket.created_date || "-"}</td>
-                </>
-              )}
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
-              {t("no_tickets_found")}
-            </td>
-          </tr>
-        )}
-      </tbody>
+                                                <span>|</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(`/tickets/${ticket.id}`)
+                                                    }}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer" }}
+                                                >
+                                                    {t("action_check")}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td>#{ticket.id}</td>
+                                        <td>{ticket.applicant}</td>
+                                        {!hidePhone && <td>{ticket.phone || "-"}</td>}
+                                        <td>{ticket.district || t("filter_district_unknown")}</td>
+                                        <td>{ticket.operator || t("filter_operator_unknown")}</td>
+                                        <td>{ticket.ai_category || "-"}</td>
+                                        <td>
+                                            <StatusBadge status={ticket.status} />
+                                        </td>
+                                        {!hidePriority && (
+                                            <td>{translatePriority(ticket.priority, t)}</td>
+                                        )}
+                                        <td>{ticket.date || ticket.created_date || "-"}</td>
+                                    </>
+                                )}
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={isUnsentView ? 7 : 9} className="empty-table">
+                                {tickets.length === 0 ? t("table_empty_no_tickets") : t("table_empty_no_match")}
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
             </table>
         </div>
     )
