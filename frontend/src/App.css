@@ -2909,6 +2909,8 @@ html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
     outline: none;
 }
 
+
+/* телефон 375px */
 @media (max-width: 375px) {
     .period-filter-buttons .period-btn {
         flex: 1 1 auto;
@@ -2923,5 +2925,15 @@ html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
         position: sticky;
         left: 0;
         background: var(--surface);
+    }
+}
+
+/* очень большой монитор */
+@media (min-width: 1800px) {
+
+    .analytics-heatmap-wrap {
+        max-width: 1600px;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
