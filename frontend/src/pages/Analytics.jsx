@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { useNavigate, useSearchParams  } from "react-router-dom"
 import StatCard from "../components/StatCard"
 import CategoryChart from "../components/CategoryChart"
 import MessagesDensityChart from "../components/MessagesDensityChart"
@@ -120,8 +121,11 @@ function countStats(items) {
 function Analytics() {
     const { user } = useAuth()
     const { t, language } = useLanguage()
+    const navigate = useNavigate()
 
     const isCitizen = user?.role_name === CITIZEN_ROLE_NAME
+    // Переход в список по клику доступен только сотрудникам: у жителя в списке «Мои обращения» только его собственные обращения
+    const canDrill = !isCitizen
 
     // Общая аналитика — по ВСЕМ обращениям (без персональных данных),
     // доступна и роли "Пользователь", а не только сотрудникам.
@@ -129,9 +133,38 @@ function Analytics() {
     const [summaryLoading, setSummaryLoading] = useState(true)
 
     // Период дашборда: по умолчанию последние 30 дней.
-    const [period, setPeriod] = useState("30d")
-    const [customFrom, setCustomFrom] = useState("")
-    const [customTo, setCustomTo] = useState("")
+    // Период хранится в адресной строке: ?period=7d, а для своего периода
+    // ещё &from=ГГГГ-ММ-ДД&to=ГГГГ-ММ-ДД. По умолчанию 30 дней.
+    const [searchParams, setSearchParams] = useSearchParams()
+
+    const rawPeriod = searchParams.get("period")
+    const period = PERIOD_OPTIONS.some((option) => option.key === rawPeriod)
+        ? rawPeriod
+        : "30d"
+    const customFrom = searchParams.get("from") || ""
+    const customTo = searchParams.get("to") || ""
+
+    // Меняет параметры в адресе. Пустое значение удаляет параметр.
+    function updateParams(changes) {
+
+        const next = new URLSearchParams(searchParams)
+
+        Object.entries(changes).forEach(([key, value]) => {
+            if (value) {
+                next.set(key, value)
+            } else {
+                next.delete(key)
+            }
+        })
+
+        setSearchParams(next, { replace: true })
+    }
+
+    useEffect(() => {
+        if (!searchParams.get("period")) {
+            updateParams({ period })
+        }
+    }, []) 
 
     const [reportDateFrom, setReportDateFrom] = useState("")
     const [reportDateTo, setReportDateTo] = useState("")
@@ -248,7 +281,7 @@ function Analytics() {
     // обращении, а если не указан — определённый ИИ.
     const getOperatorLabel = useCallback(
         (ticket) =>
-            ticket.operator || ticket.ai_operator || t("filter_operator_unknown"),
+            ticket.operator || t("filter_operator_unknown"),
         [t]
     )
 
@@ -265,6 +298,21 @@ function Analytics() {
     // Как показывать источник «Внешняя CRM» в базе это ЕКЦ 109
     function formatSourceLabel(label) {
         return label === "Внешняя CRM" ? "ЕКЦ 109" : label
+    }
+    // Открывает список обращений с выбранным фильтром и теми же датами, что выбраны на странице аналитики
+    function openTickets(filters) {
+        const params = new URLSearchParams()
+
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value) {
+                params.set(key, value)
+            }
+        })
+        if (range) {
+            params.set("date_from", range.from)
+            params.set("date_to", range.to)
+        }
+        navigate(`/tickets?${params.toString()}`)
     }
 
     function applyPreset(preset) {
@@ -330,7 +378,11 @@ function Analytics() {
                                     ? "edit-btn period-btn active"
                                     : "edit-btn period-btn"
                             }
-                            onClick={() => setPeriod(option.key)}
+                            onClick={() => updateParams( option.key === "custom"
+                                        ? { period: option.key }
+                                        : { period: option.key, from: "", to: "" }
+                                )
+                            }
                         >
                             {t(option.labelKey)}
                         </button>
@@ -348,7 +400,7 @@ function Analytics() {
                                 value={customFrom}
                                 max={customTo || undefined}
                                 onChange={(event) =>
-                                    setCustomFrom(event.target.value)
+                                    updateParams({ from: event.target.value })
                                 }
                             />
                         </label>
@@ -361,7 +413,7 @@ function Analytics() {
                                 value={customTo}
                                 min={customFrom || undefined}
                                 onChange={(event) =>
-                                    setCustomTo(event.target.value)
+                                    updateParams({ to: event.target.value })
                                 }
                             />
                         </label>
@@ -539,6 +591,11 @@ function Analytics() {
                             tickets={periodSummary}
                             prevTickets={previousSummary}
                             getLabel={getOperatorLabel}
+                            onRowClick={
+                                canDrill
+                                    ? (label) => openTickets({ operator: label })
+                                    : undefined
+                            }
                             emptyText={t("chart_no_data")}
                             noDataText={t("analytics_change_no_data")}
                         />
@@ -549,6 +606,11 @@ function Analytics() {
                             tickets={periodSummary}
                             prevTickets={previousSummary}
                             getLabel={getDistrictLabel}
+                            onRowClick={
+                                canDrill
+                                    ? (label) => openTickets({ district: label })
+                                    : undefined
+                            }                            
                             formatLabel={(label) =>
                                 translateDistrict(label, language, t)
                             }
@@ -571,7 +633,10 @@ function Analytics() {
             )}
             {!summaryLoading && (
                 <div className="analytics-heatmap-wrap">
-                    <DistrictCategoryHeatmap tickets={periodSummary} />
+                    <DistrictCategoryHeatmap
+                        tickets={periodSummary}
+                        onSelect={canDrill ? openTickets : undefined}
+                    />
                 </div>
             )}
         </div>

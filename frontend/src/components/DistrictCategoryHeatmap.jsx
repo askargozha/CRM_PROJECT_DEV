@@ -15,7 +15,6 @@ function DistrictCategoryHeatmap({ tickets, onSelect }) {
     const { t, language } = useLanguage()
 
     const unknownDistrict = t("filter_district_unknown")
-    const unknownCategory = t("analytics_category_unknown")
 
     const { districts, categories, cells, maxCount } = useMemo(() => {
 
@@ -27,6 +26,9 @@ function DistrictCategoryHeatmap({ tickets, onSelect }) {
 
             const district = ticket.district || unknownDistrict
             const category = ticket.ai_category || unknownCategory
+            if (!category) {
+                return
+            }
             const key = `${district}||${category}`
 
             cells[key] = (cells[key] || 0) + 1
@@ -55,7 +57,7 @@ function DistrictCategoryHeatmap({ tickets, onSelect }) {
 
         return { districts, categories, cells, maxCount }
 
-    }, [tickets, unknownDistrict, unknownCategory])
+    }, [tickets, unknownDistrict])
 
     return (
         <div className="chart-card heatmap-card">

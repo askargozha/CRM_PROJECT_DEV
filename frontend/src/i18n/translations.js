@@ -324,6 +324,7 @@ export const translations = {
     analytics_change_no_data: { ru: "нет данных за прошлый период", kz: "алдыңғы кезеңде дерек жоқ" },
     analytics_heatmap_title: { ru: "Район × категория", kz: "Аудан × санат" },
     analytics_category_unknown: { ru: "Не определена", kz: "Анықталмаған" },
+    filter_category_all: { ru: "Все категории", kz: "Барлық санаттар" },
     analytics_breakdown_operators: { ru: "По операторам связи", kz: "Байланыс операторлары бойынша" },
     analytics_breakdown_districts: { ru: "По районам", kz: "Аудандар бойынша" },
     analytics_breakdown_sources: { ru: "По источникам обращений", kz: "Өтініш көздері бойынша" },

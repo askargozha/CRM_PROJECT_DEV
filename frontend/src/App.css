@@ -2895,3 +2895,16 @@ html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
 .heat-cell-click:hover {
     transform: scale(1.06);
 }
+
+/* Аналитика: нажимаемые строки */
+.breakdown-row-click {
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+}
+
+.breakdown-row-click:hover,
+.breakdown-row-click:focus-visible {
+    background: var(--mist);
+    outline: none;
+}

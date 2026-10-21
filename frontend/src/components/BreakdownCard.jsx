@@ -37,6 +37,7 @@ function BreakdownCard({
     prevTickets,
     getLabel,
     formatLabel,
+    onRowClick,
     emptyText,
     noDataText,
     limit = 6
@@ -120,8 +121,26 @@ function BreakdownCard({
                         }
 
                         return (
-                            <div className="chart-row breakdown-row" key={row.label}>
-
+                            <div className={onRowClick
+                                        ? "chart-row breakdown-row breakdown-row-click"
+                                        : "chart-row breakdown-row"
+                                }
+                                key={row.label}
+                                role={onRowClick ? "button" : undefined}
+                                tabIndex={onRowClick ? 0 : undefined}
+                                onClick={
+                                    onRowClick ? () => onRowClick(row.label) : undefined
+                                }
+                                onKeyDown={
+                                    onRowClick
+                                        ? (event) => {
+                                            if (event.key === "Enter") {
+                                                onRowClick(row.label)
+                                            }
+                                        }
+                                        : undefined
+                                }
+                            >
                                 <span className="chart-label">
                                     {formatLabel
                                         ? formatLabel(row.label)
