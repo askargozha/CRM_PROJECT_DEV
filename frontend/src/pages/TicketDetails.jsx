@@ -531,29 +531,7 @@ function TicketDetails() {
                     </h2>
 
                 </div>
-feature/auto-remove-unsent-ticket
-{/* Жёлтая плашка предупреждения о неотправленном письме */}
-{!isCitizen && (ticket.email_sent === false || ticket.email_error) && (
-    <div style={{
-        backgroundColor: "#fff3cd",
-        color: "#856404",
-        border: "1px solid #ffeeba",
-        padding: "12px 16px",
-        borderRadius: "6px",
-        marginBottom: "16px",
-        fontSize: "14px",
-        lineHeight: "1.5"
-    }}>
-        <strong>⚠️ {t("details_email_status_not_sent") || "Не отправлено оператору"}</strong>
-        <div>
-            {ticket.email_error 
-                ? `Причина: ${ticket.email_error}`
-                : `Причина: Для оператора «${ticket.operator || "—"}» не настроен email — добавьте его на странице «Операторы рассылки»`}
-        </div>
-    </div>
-)}
 
-                {!ticket.email_sent && (
                     <div style={{
                         backgroundColor: "#FFFBEB",
                         borderLeft: "4px solid #F59E0B",
@@ -574,9 +552,8 @@ feature/auto-remove-unsent-ticket
                             </span>
                         </div>
                     </div>
-                )}
+                
 
-dev
                 <div className="detail-columns">
 
                     <div className="detail-card">
