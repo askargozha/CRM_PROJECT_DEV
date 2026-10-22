@@ -12,6 +12,9 @@ export const translations = {
         kz: "Smart Aqmola — байланыс бойынша өтініштер"
     },
     nav_logout: { ru: "Выйти", kz: "Шығу" },
+    nav_menu: { ru: "Главное меню", kz: "Басты мәзір" },
+    nav_open_menu: { ru: "Открыть меню", kz: "Мәзірді ашу" },
+    nav_close_menu: { ru: "Закрыть меню", kz: "Мәзірді жабу" },
     brand_tag: { ru: "CRM обращений", kz: "Хабарламалар CRM" },
     nav_home: { ru: "Главная", kz: "Басты бет" },
     nav_my_tickets: { ru: "Мои обращения", kz: "Менің өтініштерім" },
