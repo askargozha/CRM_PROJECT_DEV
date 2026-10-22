@@ -3,22 +3,31 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 
 import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
-
-import { translateCategory, translatePriority } from "../i18n/helpers"
+import { translatePriority, translateCategory, translateDistrict } from "../i18n/helpers"
 import { resendTicketEmail, reanalyzeTicket } from "../api/ticketApi"
-
-function getTimeAgo(dateString) {
+function getTimeAgo(dateString, t) {
     if (!dateString) return "—"
     const created = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now - created) / (1000 * 60 * 60))
 
-    if (diffInHours < 1) return "Менее часа"
-    if (diffInHours < 24) return `${diffInHours} ч.`
+    if (diffInHours < 1) return t("time_less_than_hour")
+    if (diffInHours < 24) return `${diffInHours} ${t("unit_hours")}`
     const days = Math.floor(diffInHours / 24)
-    return `${days} дн.`
+    return `${days} ${t("unit_days")}`
 }
-
+function formatEmailError(errorText, language, t) {
+    if (!errorText) return t("details_email_not_sent")
+    
+    const match = String(errorText).match(/Для оператора «(.+?)» не настроен email — добавьте его на странице «Операторы рассылки»\./)
+    if (match) {
+        const operatorName = match[1]
+        return language === "kz" 
+            ? `«${operatorName}» операторы үшін email бапталмаған — оны «Таратылым операторлары» бетінде қосыңыз.`
+            : errorText
+    }
+    return errorText
+}
 function exportToExcel(tickets, filenamePrefix, t) {
     import("xlsx").then((XLSX) => {
         const rows = tickets.map((ticket) => ({
@@ -49,7 +58,7 @@ function exportToExcel(tickets, filenamePrefix, t) {
 }
 
 function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, onRefresh }) {
-    const { t } = useLanguage()
+    const { t, language } = useLanguage()
 
     const hidePhone = hideColumns.includes("phone")
     const hidePriority = hideColumns.includes("priority")
@@ -279,9 +288,9 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                 >
                     <option value="Все">{t("filter_district_all")}</option>
                     {districtOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
+                         <option key={value} value={value}>
+                             {translateDistrict(value, language, t)}
+                         </option>
                     ))}
                 </select>
 
@@ -290,12 +299,12 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                     onChange={(event) => setCategory(event.target.value)}
                     className="filter"
                 >
-                    <option value="Все">Все категории</option>
+                    <option value="Все">{t("filter_category_all")}</option>
                     {categoryOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
-                    ))}
+                         <option key={value} value={value}>
+                            {translateCategory(value, t)}
+                         </option>
+))}
                 </select>
 
                 <select
@@ -303,8 +312,8 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                     onChange={(event) => setSortOrder(event.target.value)}
                     className="filter"
                 >
-                    <option value="asc">Сначала старые</option>
-                    <option value="desc">Сначала новые</option>
+                   <option value="asc">{t("sort_oldest")}</option>
+                   <option value="desc">{t("sort_newest")}</option>
                 </select>
 
                 <select
@@ -351,16 +360,16 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
             <table>
                 <thead>
                     {isUnsentView ? (
-                        <tr>
-                            <th>№</th>
-                            <th>Район</th>
-                            <th>Оператор</th>
-                            <th>Тема / Категория</th>
-                            <th>Причина задержки</th>
-                            <th>Сколько висит</th>
-                            <th>Действие</th>
-                        </tr>
-                    ) : (
+    <tr>
+        <th>{t("table_col_number")}</th>
+        <th>{t("table_col_district")}</th>
+        <th>{t("table_col_operator")}</th>
+        <th>{t("table_col_category_ai")}</th>
+        <th>{t("table_col_delay_reason")}</th>
+        <th>{t("table_col_pending_time")}</th>
+        <th>{t("table_col_action")}</th>
+    </tr>
+) : (
                         <tr>
                             <th>{t("table_col_number")}</th>
                             <th>{t("table_col_applicant")}</th>
@@ -386,13 +395,13 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                 {isUnsentView ? (
                                     <>
                                         <td>#{ticket.id}</td>
-                                        <td>{ticket.district || t("filter_district_unknown")}</td>
+                                        <td>{translateDistrict(ticket.district || t("filter_district_unknown"), language, t)}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || ticket.category || "-"}</td>
+                                        <td>{translateCategory(ticket.ai_category || ticket.category, t)}</td>
                                         <td style={{ color: "#d9534f", fontWeight: "500" }}>
-                                            {ticket.email_error || ticket.error_message || "Ошибка отправки"}
-                                        </td>
-                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
+                                         {formatEmailError(ticket.email_error || ticket.error_message, language, t)}
+                                     </td>
+                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date, t)}</td>
                                         <td>
                                             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                                                 <button
@@ -437,9 +446,9 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                         <td>#{ticket.id}</td>
                                         <td>{ticket.applicant}</td>
                                         {!hidePhone && <td>{ticket.phone || "-"}</td>}
-                                        <td>{ticket.district || t("filter_district_unknown")}</td>
+                                        <td>{translateDistrict(ticket.district, language, t)}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || "-"}</td>
+                                        <td>{translateCategory(ticket.ai_category, t)}</td>
                                         <td>
                                             <StatusBadge status={ticket.status} />
                                         </td>
