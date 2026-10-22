@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
 import { translatePriority } from "../i18n/helpers"
-import { resendTicketEmail } from "../api/ticketApi"
+import { resendTicketEmail, reanalyzeTicket } from "../api/ticketApi"
 
 function getTimeAgo(dateString) {
     if (!dateString) return "—"
@@ -70,16 +70,25 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
 
     const handleResend = async (e, ticketId) => {
         e.stopPropagation()
-        
+        e.preventDefault()
+
         const isConfirmed = window.confirm("Вы уверены, что хотите переотправить письмо?")
         if (!isConfirmed) return
 
         try {
             setActionError(null)
             setResendingId(ticketId)
-            await resendTicketEmail(ticketId)
-            if (onRefresh) {
-                await onRefresh()
+
+            const res = await resendTicketEmail(ticketId)
+            const resData = res?.data || res
+
+            if (resData && resData.email_sent === true) {
+                if (onRefresh) {
+                    await onRefresh()
+                }
+            } else {
+                const errorMessage = resData?.email_error || "Не удалось отправить письмо оператору"
+                setActionError(errorMessage)
             }
         } catch (err) {
             console.error("Ошибка при повторной отправке:", err)
@@ -88,7 +97,31 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
             setResendingId(null)
         }
     }
+    const [reanalyzingId, setReanalyzingId] = useState(null)
 
+    const handleReanalyze = async (e, ticketId) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        const isConfirmed = window.confirm("Вы уверены, что хотите перезапустить ИИ-анализ?")
+        if (!isConfirmed) return
+
+        try {
+            setActionError(null)
+            setReanalyzingId(ticketId)
+
+            await reanalyzeTicket(ticketId)
+
+            if (onRefresh) {
+                await onRefresh()
+            }
+        } catch (err) {
+            console.error("Ошибка при перезапуске ИИ-анализа:", err)
+            setActionError(err.message || "Не удалось перезапустить ИИ-анализ")
+        } finally {
+            setReanalyzingId(null)
+        }
+    }
     const operatorOptions = useMemo(() => {
         const unique = new Set()
         tickets.forEach((ticket) => {
@@ -348,9 +381,9 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                 {isUnsentView ? (
                                     <>
                                         <td>#{ticket.id}</td>
-                                        <td>{ticket.district || "Не указан"}</td>
+                                        <td>{ticket.district || t("filter_district_unknown")}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || ticket.category || "—"}</td>
+                                        <td>{ticket.ai_category || ticket.category || "-"}</td>
                                         <td style={{ color: "#d9534f", fontWeight: "500" }}>
                                             {ticket.email_error || ticket.error_message || "Ошибка отправки"}
                                         </td>
@@ -363,8 +396,23 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                                     className="action-link"
                                                     style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
                                                 >
-                                                    {resendingId === ticket.id ? "Отправка..." : "Отправить повторно"}
+                                                    {resendingId === ticket.id ? t("details_email_sending") : t("action_resend")}
                                                 </button>
+
+                                                {ticket.ai_processed === false && (
+                                                    <>
+                                                        <span>|</span>
+                                                        <button
+                                                            onClick={(e) => handleReanalyze(e, ticket.id)}
+                                                            disabled={reanalyzingId === ticket.id}
+                                                            className="action-link"
+                                                            style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                        >
+                                                            {reanalyzingId === ticket.id ? t("details_analyzing") : t("reanalyze_ai_button")}
+                                                        </button>
+                                                    </>
+                                                )}
+
                                                 <span>|</span>
                                                 <button
                                                     onClick={(e) => {
@@ -374,7 +422,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                                     className="action-link"
                                                     style={{ border: "none", background: "none", cursor: "pointer" }}
                                                 >
-                                                    Проверить
+                                                    {t("action_check")}
                                                 </button>
                                             </div>
                                         </td>
@@ -383,17 +431,17 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                                     <>
                                         <td>#{ticket.id}</td>
                                         <td>{ticket.applicant}</td>
-                                        {!hidePhone && <td>{ticket.phone || "—"}</td>}
+                                        {!hidePhone && <td>{ticket.phone || "-"}</td>}
                                         <td>{ticket.district || t("filter_district_unknown")}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || "—"}</td>
+                                        <td>{ticket.ai_category || "-"}</td>
                                         <td>
                                             <StatusBadge status={ticket.status} />
                                         </td>
                                         {!hidePriority && (
                                             <td>{translatePriority(ticket.priority, t)}</td>
                                         )}
-                                        <td>{ticket.date || ticket.created_date || "—"}</td>
+                                        <td>{ticket.date || ticket.created_date || "-"}</td>
                                     </>
                                 )}
                             </tr>
@@ -401,9 +449,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
                     ) : (
                         <tr>
                             <td colSpan={isUnsentView ? 7 : 9} className="empty-table">
-                                {tickets.length === 0
-                                    ? t("table_empty_no_tickets")
-                                    : t("table_empty_no_match")}
+                                {tickets.length === 0 ? t("table_empty_no_tickets") : t("table_empty_no_match")}
                             </td>
                         </tr>
                     )}
