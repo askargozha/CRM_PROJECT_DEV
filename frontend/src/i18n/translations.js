@@ -453,6 +453,20 @@ export const translations = {
     },
    reanalyze_ai_button: { ru: "Перезапустить ИИ-анализ", kz: "ЖИ-талдауын қайта іске қосу" },
     action_resend: { ru: "Отправить повторно", kz: "Қайта жіберу" },
-    action_check: { ru: "Проверить", kz: "Тексеру" }
+    action_check: { ru: "Проверить", kz: "Тексеру" },
+    // --- Unsent email banner & extra actions ---
+    unsent_banner_title: { ru: "Не отправлено оператору", kz: "Операторға жіберілген жоқ" },
+    unsent_banner_reason_prefix: { ru: "Причина:", kz: "Себебі:" },
+    unsent_banner_reason_default: { ru: "Причина: письмо не отправлено", kz: "Себебі: хат жіберілген жоқ" },
+    // --- Extra table keys ---
+    filter_category_all: { ru: "Все категории", kz: "Барлық санаттар" },
+    sort_oldest: { ru: "Сначала старые", kz: "Алдымен ескілері" },
+    sort_newest: { ru: "Сначала новые", kz: "Алдымен жаңалары" },
+    table_col_delay_reason: { ru: "Причина задержки", kz: "Кешігу себебі" },
+    table_col_pending_time: { ru: "Сколько висит", kz: "Қанша уақыт тұр" },
+    table_col_action: { ru: "Действие", kz: "Әрекет" },
+    time_less_than_hour: { ru: "Менее часа", kz: "Бір сағаттан аз" },
+    unit_hours: { ru: "ч.", kz: "сағ." },
+    unit_days: { ru: "дн.", kz: "күн" },
     // === END ===
 }

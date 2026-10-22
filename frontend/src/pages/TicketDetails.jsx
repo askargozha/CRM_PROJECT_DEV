@@ -547,10 +547,12 @@ function TicketDetails() {
     <span style={{ fontSize: "20px", marginRight: "12px" }}>⚠️</span>
     <div>
       <strong style={{ color: "#92400E", fontSize: "14px", display: "block" }}>
-        Не отправлено оператору
+        {t("unsent_banner_title")}
       </strong>
       <span style={{ color: "#B45309", fontSize: "13.5px" }}>
-        {ticket.email_error ? `Причина: ${ticket.email_error}` : "Причина: письмо не отправлено"}
+        {ticket.email_error 
+          ? `${t("unsent_banner_reason_prefix")} ${ticket.email_error}` 
+          : t("unsent_banner_reason_default")}
       </span>
     </div>
   </div>
