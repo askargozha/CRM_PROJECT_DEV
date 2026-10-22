@@ -8,6 +8,7 @@ import {
 } from "../api/userApi"
 import { getRoles } from "../api/rolesApi"
 import { useAuth } from "../context/AuthContext"
+import { useToast } from "../context/ToastContext"
 import { useLanguage } from "../context/LanguageContext"
 
 function UserModal({ roles, user, onClose, onSaved }) {
@@ -198,6 +199,7 @@ function UserManagementPage({
     matchesSection,
     dropdownRoleFilter
 }) {
+    const notify = useToast()
 
     const { user: currentUser } = useAuth()
     const { t } = useLanguage()
@@ -243,7 +245,7 @@ function UserManagementPage({
             await deleteUser(id)
             loadData()
         } catch (err) {
-            alert(err.message)
+            notify(err.message)
         }
     }
 
