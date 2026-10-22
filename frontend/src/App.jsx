@@ -1,6 +1,6 @@
 import "./App.css"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import {
     BrowserRouter,
@@ -101,6 +101,52 @@ function CRMLayout() {
 
     const [now, setNow] = useState(new Date())
     const [unsentCount, setUnsentCount] = useState(0)
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 860px)").matches)
+    const menuToggleRef = useRef(null)
+    const sidebarRef = useRef(null)
+
+    useEffect(() => {
+        const media = window.matchMedia("(max-width: 860px)")
+        function handleResize(event) {
+            setIsMobile(event.matches)
+            if (!event.matches) setMenuOpen(false)
+        }
+        media.addEventListener("change", handleResize)
+        return () => media.removeEventListener("change", handleResize)
+    }, [])
+
+    useEffect(() => {
+        if (!menuOpen || !isMobile) return
+
+        const sidebar = sidebarRef.current
+        const toggle = menuToggleRef.current
+        const previousOverflow = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        sidebar.querySelector("button, a[href]")?.focus()
+
+        function handleKeyDown(event) {
+            if (event.key === "Escape") setMenuOpen(false)
+            if (event.key !== "Tab") return
+
+            const controls = sidebar.querySelectorAll("button, a[href]")
+            const first = controls[0]
+            const last = controls[controls.length - 1]
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault()
+                last.focus()
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault()
+                first.focus()
+            }
+        }
+        document.addEventListener("keydown", handleKeyDown)
+        return () => {
+            document.body.style.overflow = previousOverflow
+            document.removeEventListener("keydown", handleKeyDown)
+            if (window.matchMedia("(max-width: 860px)").matches) toggle?.focus()
+        }
+    }, [menuOpen, isMobile])
 
     // Управление тёмной темой
     const [theme, setTheme] = useState(() => {
@@ -193,7 +239,18 @@ function CRMLayout() {
 
     return (
         <div className="app">
-            <header className="header">
+            <header className="header" inert={isMobile && menuOpen}>
+                <button
+                    ref={menuToggleRef}
+                    type="button"
+                    className="mobile-menu-toggle"
+                    aria-label={t("nav_open_menu")}
+                    aria-expanded={menuOpen}
+                    aria-controls="main-sidebar"
+                    onClick={() => setMenuOpen((open) => !open)}
+                >
+                    <span aria-hidden="true">☰</span>
+                </button>
                 <div className="header-greeting">
                     <h1>
                         {getGreeting(now.getHours(), t)}, {firstName}
@@ -253,7 +310,30 @@ function CRMLayout() {
             </header>
 
             <main className="main">
-                <aside className="sidebar">
+                {isMobile && menuOpen && (
+                    <button
+                        type="button"
+                        className="mobile-menu-overlay"
+                        aria-label={t("nav_close_menu")}
+                        tabIndex={-1}
+                        onClick={() => setMenuOpen(false)}
+                    />
+                )}
+                <aside
+                    id="main-sidebar"
+                    ref={sidebarRef}
+                    className={`sidebar${menuOpen ? " open" : ""}`}
+                    aria-label={t("nav_menu")}
+                    inert={isMobile && !menuOpen}
+                >
+                    <button
+                        type="button"
+                        className="mobile-menu-close"
+                        aria-label={t("nav_close_menu")}
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        <span aria-hidden="true">×</span>
+                    </button>
                     <div className="brand">
                         <img
                             src={logo}
@@ -267,7 +347,9 @@ function CRMLayout() {
                         </div>
                     </div>
 
-                    <ul>
+                    <ul onClick={(event) => {
+                        if (event.target.closest("a")) setMenuOpen(false)
+                    }}>
                         <NavLink to="/">
                             {t("nav_home")}
                         </NavLink>
@@ -341,7 +423,7 @@ function CRMLayout() {
                     </ul>
                 </aside>
 
-                <section className="content">
+                <section className="content" inert={isMobile && menuOpen}>
                     <Routes>
                         <Route
                             path="/"
@@ -435,7 +517,7 @@ function CRMLayout() {
                 </section>
             </main>
 
-            <footer className="footer">
+            <footer className="footer" inert={isMobile && menuOpen}>
                 <div className="footer-content">
                     <span>
                         © {new Date().getFullYear()} {t("footer_copyright")}
