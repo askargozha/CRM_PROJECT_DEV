@@ -3,17 +3,23 @@
 // Используется через useLanguage().t('ключ') во всех компонентах.
 
 export const translations = {
+    // --- Toast notifications ---
+    toast_close: { ru: "Закрыть уведомление", kz: "Хабарландыруды жабу" },
+
     // --- App shell: header, nav, footer ---
     app_header_title: {
         ru: "Smart Aqmola — обращения по связи",
         kz: "Smart Aqmola — байланыс бойынша өтініштер"
     },
     nav_logout: { ru: "Выйти", kz: "Шығу" },
+    nav_menu: { ru: "Главное меню", kz: "Басты мәзір" },
+    nav_open_menu: { ru: "Открыть меню", kz: "Мәзірді ашу" },
+    nav_close_menu: { ru: "Закрыть меню", kz: "Мәзірді жабу" },
     brand_tag: { ru: "CRM обращений", kz: "Хабарламалар CRM" },
     nav_home: { ru: "Главная", kz: "Басты бет" },
     nav_my_tickets: { ru: "Мои обращения", kz: "Менің өтініштерім" },
     nav_tickets: { ru: "Обращения", kz: "Хабарламалар" },
-    nav_unsent_tickets: { ru: "Неотправленные", kz: "Жіберілмегендер" },
+    nav_unsent_tickets: { ru: "Неотправленные", kz: "Жіберілмегендер" },    
     nav_users: { ru: "Пользователи", kz: "Пайдаланушылар" },
     nav_staff: { ru: "Сотрудники", kz: "Қызметкерлер" },
     nav_email_operators: { ru: "Операторы рассылки", kz: "Таратылым операторлары" },
@@ -312,6 +318,24 @@ export const translations = {
     analytics_report_preset_week: { ru: "За неделю", kz: "Аптаға" },
     analytics_report_preset_month: { ru: "За месяц", kz: "Айға" },
     analytics_report_preset_all: { ru: "За всё время", kz: "Барлық уақыт үшін" },
+    analytics_period_7d: { ru: "7 дней", kz: "7 күн" },
+    analytics_period_30d: { ru: "30 дней", kz: "30 күн" },
+    analytics_period_quarter: { ru: "Квартал", kz: "Тоқсан" },
+    analytics_period_year: { ru: "Год", kz: "Жыл" },
+    analytics_period_custom: { ru: "Свой период", kz: "Өз кезеңім" },
+    analytics_period_from: { ru: "С", kz: "Бастап" },
+    analytics_period_to: { ru: "По", kz: "Дейін" },
+    analytics_period_pick_dates: { ru: "Выберите обе даты, чтобы применить период", kz: "Кезеңді қолдану үшін екі күнді де таңдаңыз" },
+    analytics_change_vs_prev: { ru: "к прошлому периоду", kz: "алдыңғы кезеңмен салыстырғанда" },
+    analytics_change_no_data: { ru: "нет данных за прошлый период", kz: "алдыңғы кезеңде дерек жоқ" },
+    analytics_heatmap_title: { ru: "Район × категория", kz: "Аудан × санат" },
+    analytics_category_unknown: { ru: "Не определена", kz: "Анықталмаған" },
+    filter_category_all: { ru: "Все категории", kz: "Барлық санаттар" },
+    analytics_loading: { ru: "Загружаем аналитику...", kz: "Аналитика жүктелуде..." },
+    analytics_empty_period: { ru: "Нет данных за выбранный период", kz: "Таңдалған кезеңде деректер жоқ" },
+    analytics_breakdown_operators: { ru: "По операторам связи", kz: "Байланыс операторлары бойынша" },
+    analytics_breakdown_districts: { ru: "По районам", kz: "Аудандар бойынша" },
+    analytics_breakdown_sources: { ru: "По источникам обращений", kz: "Өтініш көздері бойынша" },
     analytics_report_from: { ru: "С даты", kz: "Басталу күні" },
     analytics_report_to: { ru: "По дату", kz: "Аяқталу күні" },
     analytics_report_download: { ru: "Скачать отчёт (PDF)", kz: "Есепті жүктеу (PDF)" },
@@ -445,6 +469,21 @@ export const translations = {
         ru: "Цифра в кружке — сколько обращений пришло из этого района/города. Чем больше кружок, тем больше обращений.",
         kz: "Дөңгелектегі сан — осы аудан/қаладан қанша өтініш келгенін көрсетеді. Дөңгелек неғұрлым үлкен болса, соғұрлым өтініш көп."
     },
-
+   reanalyze_ai_button: { ru: "Перезапустить ИИ-анализ", kz: "ЖИ-талдауын қайта іске қосу" },
+    action_resend: { ru: "Отправить повторно", kz: "Қайта жіберу" },
+    action_check: { ru: "Проверить", kz: "Тексеру" },
+    // --- Unsent email banner & extra actions ---
+    unsent_banner_title: { ru: "Не отправлено оператору", kz: "Операторға жіберілген жоқ" },
+    unsent_banner_reason_prefix: { ru: "Причина:", kz: "Себебі:" },
+    unsent_banner_reason_default: { ru: "Причина: письмо не отправлено", kz: "Себебі: хат жіберілген жоқ" },
+    // --- Extra table keys ---
+    sort_oldest: { ru: "Сначала старые", kz: "Алдымен ескілері" },
+    sort_newest: { ru: "Сначала новые", kz: "Алдымен жаңалары" },
+    table_col_delay_reason: { ru: "Причина задержки", kz: "Кешігу себебі" },
+    table_col_pending_time: { ru: "Сколько висит", kz: "Қанша уақыт тұр" },
+    table_col_action: { ru: "Действие", kz: "Әрекет" },
+    time_less_than_hour: { ru: "Менее часа", kz: "Бір сағаттан аз" },
+    unit_hours: { ru: "ч.", kz: "сағ." },
+    unit_days: { ru: "дн.", kz: "күн" },
     // === END ===
 }

@@ -1,22 +1,33 @@
 import { useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
-import { translatePriority } from "../i18n/helpers"
-
-function getTimeAgo(dateString) {
+import { translatePriority, translateCategory, translateDistrict } from "../i18n/helpers"
+import { resendTicketEmail, reanalyzeTicket } from "../api/ticketApi"
+function getTimeAgo(dateString, t) {
     if (!dateString) return "—"
     const created = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now - created) / (1000 * 60 * 60))
 
-    if (diffInHours < 1) return "Менее часа"
-    if (diffInHours < 24) return `${diffInHours} ч.`
+    if (diffInHours < 1) return t("time_less_than_hour")
+    if (diffInHours < 24) return `${diffInHours} ${t("unit_hours")}`
     const days = Math.floor(diffInHours / 24)
-    return `${days} дн.`
+    return `${days} ${t("unit_days")}`
 }
-
+function formatEmailError(errorText, language, t) {
+    if (!errorText) return t("details_email_not_sent")
+    
+    const match = String(errorText).match(/Для оператора «(.+?)» не настроен email — добавьте его на странице «Операторы рассылки»\./)
+    if (match) {
+        const operatorName = match[1]
+        return language === "kz" 
+            ? `«${operatorName}» операторы үшін email бапталмаған — оны «Таратылым операторлары» бетінде қосыңыз.`
+            : errorText
+    }
+    return errorText
+}
 function exportToExcel(tickets, filenamePrefix, t) {
     import("xlsx").then((XLSX) => {
         const rows = tickets.map((ticket) => ({
@@ -46,24 +57,84 @@ function exportToExcel(tickets, filenamePrefix, t) {
     })
 }
 
-function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false }) {
-    const { t } = useLanguage()
+function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, onRefresh }) {
+    const { t, language } = useLanguage()
 
     const hidePhone = hideColumns.includes("phone")
     const hidePriority = hideColumns.includes("priority")
 
+    // «Аналитика»: /tickets?district=...&operator=...&category=...
+    // &date_from=ГГГГ-ММ-ДД&date_to=ГГГГ-ММ-ДД
+    const [searchParams] = useSearchParams()
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState("Все")
-    const [operator, setOperator] = useState("Все")
-    const [district, setDistrict] = useState("Все")
-    const [category, setCategory] = useState("Все")
+    const [operator, setOperator] = useState(searchParams.get("operator") || "Все")
+    const [district, setDistrict] = useState(searchParams.get("district") || "Все")
+    const [category, setCategory] = useState(searchParams.get("category") || "Все")
     const [emailStatus, setEmailStatus] = useState("Все")
-    const [dateFrom, setDateFrom] = useState("")
-    const [dateTo, setDateTo] = useState("")
+    const [dateFrom, setDateFrom] = useState(searchParams.get("date_from") || "")
+    const [dateTo, setDateTo] = useState(searchParams.get("date_to") || "")
     const [sortOrder, setSortOrder] = useState("desc")
+
+    const [resendingId, setResendingId] = useState(null)
+    const [actionError, setActionError] = useState(null)
 
     const navigate = useNavigate()
 
+    const handleResend = async (e, ticketId) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        const isConfirmed = window.confirm("Вы уверены, что хотите переотправить письмо?")
+        if (!isConfirmed) return
+
+        try {
+            setActionError(null)
+            setResendingId(ticketId)
+
+            const res = await resendTicketEmail(ticketId)
+            const resData = res?.data || res
+
+            if (resData && resData.email_sent === true) {
+                if (onRefresh) {
+                    await onRefresh()
+                }
+            } else {
+                const errorMessage = resData?.email_error || "Не удалось отправить письмо оператору"
+                setActionError(errorMessage)
+            }
+        } catch (err) {
+            console.error("Ошибка при повторной отправке:", err)
+            setActionError(err.message || "Не удалось отправить письмо повторно")
+        } finally {
+            setResendingId(null)
+        }
+    }
+    const [reanalyzingId, setReanalyzingId] = useState(null)
+
+    const handleReanalyze = async (e, ticketId) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        const isConfirmed = window.confirm("Вы уверены, что хотите перезапустить ИИ-анализ?")
+        if (!isConfirmed) return
+
+        try {
+            setActionError(null)
+            setReanalyzingId(ticketId)
+
+            await reanalyzeTicket(ticketId)
+
+            if (onRefresh) {
+                await onRefresh()
+            }
+        } catch (err) {
+            console.error("Ошибка при перезапуске ИИ-анализа:", err)
+            setActionError(err.message || "Не удалось перезапустить ИИ-анализ")
+        } finally {
+            setReanalyzingId(null)
+        }
+    }
     const operatorOptions = useMemo(() => {
         const unique = new Set()
         tickets.forEach((ticket) => {
@@ -88,6 +159,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
         })
         return Array.from(unique).sort()
     }, [tickets])
+
 
     const filteredTickets = tickets
         .filter(ticket =>
@@ -156,6 +228,12 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
 
     return (
         <div className="table-container">
+            {actionError && (
+                <div style={{ color: "#d9534f", padding: "8px 12px", marginBottom: "12px", backgroundColor: "#fdf7f7", borderRadius: "4px", border: "1px solid #d9534f" }}>
+                    {actionError}
+                </div>
+            )}
+
             <div className="table-header-row">
                 <h2>{title || t("table_default_title")}</h2>
                 <button
@@ -210,9 +288,9 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                 >
                     <option value="Все">{t("filter_district_all")}</option>
                     {districtOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
+                         <option key={value} value={value}>
+                             {translateDistrict(value, language, t)}
+                         </option>
                     ))}
                 </select>
 
@@ -221,12 +299,12 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                     onChange={(event) => setCategory(event.target.value)}
                     className="filter"
                 >
-                    <option value="Все">Все категории</option>
+                    <option value="Все">{t("filter_category_all")}</option>
                     {categoryOptions.map((value) => (
-                        <option key={value} value={value}>
-                            {value}
-                        </option>
-                    ))}
+                         <option key={value} value={value}>
+                            {translateCategory(value, t)}
+                         </option>
+))}
                 </select>
 
                 <select
@@ -234,8 +312,8 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                     onChange={(event) => setSortOrder(event.target.value)}
                     className="filter"
                 >
-                    <option value="asc">Сначала старые</option>
-                    <option value="desc">Сначала новые</option>
+                   <option value="asc">{t("sort_oldest")}</option>
+                   <option value="desc">{t("sort_newest")}</option>
                 </select>
 
                 <select
@@ -282,16 +360,16 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
             <table>
                 <thead>
                     {isUnsentView ? (
-                        <tr>
-                            <th>№</th>
-                            <th>Район</th>
-                            <th>Оператор</th>
-                            <th>Тема / Категория</th>
-                            <th>Причина задержки</th>
-                            <th>Сколько висит</th>
-                            <th>Действие</th>
-                        </tr>
-                    ) : (
+    <tr>
+        <th>{t("table_col_number")}</th>
+        <th>{t("table_col_district")}</th>
+        <th>{t("table_col_operator")}</th>
+        <th>{t("table_col_category_ai")}</th>
+        <th>{t("table_col_delay_reason")}</th>
+        <th>{t("table_col_pending_time")}</th>
+        <th>{t("table_col_action")}</th>
+    </tr>
+) : (
                         <tr>
                             <th>{t("table_col_number")}</th>
                             <th>{t("table_col_applicant")}</th>
@@ -317,40 +395,67 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                                 {isUnsentView ? (
                                     <>
                                         <td>#{ticket.id}</td>
-                                        <td>{ticket.district || "Не указан"}</td>
+                                        <td>{translateDistrict(ticket.district || t("filter_district_unknown"), language, t)}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || ticket.category || "—"}</td>
+                                        <td>{translateCategory(ticket.ai_category || ticket.category, t)}</td>
                                         <td style={{ color: "#d9534f", fontWeight: "500" }}>
-                                            {ticket.email_error || ticket.error_message || "Ошибка отправки"}
-                                        </td>
-                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date)}</td>
+                                         {formatEmailError(ticket.email_error || ticket.error_message, language, t)}
+                                     </td>
+                                        <td>{getTimeAgo(ticket.created_at || ticket.created_date || ticket.date, t)}</td>
                                         <td>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    navigate(`/tickets/${ticket.id}`)
-                                                }}
-                                                className="action-link"
-                                            >
-                                                Проверить и отправить
-                                            </button>
+                                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                                <button
+                                                    onClick={(e) => handleResend(e, ticket.id)}
+                                                    disabled={resendingId === ticket.id}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                >
+                                                    {resendingId === ticket.id ? t("details_email_sending") : t("action_resend")}
+                                                </button>
+
+                                                {ticket.ai_processed === false && (
+                                                    <>
+                                                        <span>|</span>
+                                                        <button
+                                                            onClick={(e) => handleReanalyze(e, ticket.id)}
+                                                            disabled={reanalyzingId === ticket.id}
+                                                            className="action-link"
+                                                            style={{ border: "none", background: "none", cursor: "pointer", color: "#0275d8" }}
+                                                        >
+                                                            {reanalyzingId === ticket.id ? t("details_analyzing") : t("reanalyze_ai_button")}
+                                                        </button>
+                                                    </>
+                                                )}
+
+                                                <span>|</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        navigate(`/tickets/${ticket.id}`)
+                                                    }}
+                                                    className="action-link"
+                                                    style={{ border: "none", background: "none", cursor: "pointer" }}
+                                                >
+                                                    {t("action_check")}
+                                                </button>
+                                            </div>
                                         </td>
                                     </>
                                 ) : (
                                     <>
                                         <td>#{ticket.id}</td>
                                         <td>{ticket.applicant}</td>
-                                        {!hidePhone && <td>{ticket.phone || "—"}</td>}
-                                        <td>{ticket.district || t("filter_district_unknown")}</td>
+                                        {!hidePhone && <td>{ticket.phone || "-"}</td>}
+                                        <td>{translateDistrict(ticket.district, language, t)}</td>
                                         <td>{ticket.operator || t("filter_operator_unknown")}</td>
-                                        <td>{ticket.ai_category || "—"}</td>
+                                        <td>{translateCategory(ticket.ai_category, t)}</td>
                                         <td>
                                             <StatusBadge status={ticket.status} />
                                         </td>
                                         {!hidePriority && (
                                             <td>{translatePriority(ticket.priority, t)}</td>
                                         )}
-                                        <td>{ticket.date || ticket.created_date || "—"}</td>
+                                        <td>{ticket.date || ticket.created_date || "-"}</td>
                                     </>
                                 )}
                             </tr>
@@ -358,9 +463,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false })
                     ) : (
                         <tr>
                             <td colSpan={isUnsentView ? 7 : 9} className="empty-table">
-                                {tickets.length === 0
-                                    ? t("table_empty_no_tickets")
-                                    : t("table_empty_no_match")}
+                                {tickets.length === 0 ? t("table_empty_no_tickets") : t("table_empty_no_match")}
                             </td>
                         </tr>
                     )}

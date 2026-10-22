@@ -691,20 +691,31 @@ tbody tr:last-child td {
     border-radius: 999px;
     background: currentColor;
 }
-
 .status-new {
-    background: rgba(244, 183, 64, 0.16);
-    color: #A66A0C;
+    background: var(--status-new-bg, rgba(244, 183, 64, 0.16));
+    color: var(--status-new-text, #A66A0C);
 }
 
 .status-progress {
-    background: rgba(46, 127, 193, 0.14);
-    color: var(--sky);
+    background: var(--status-progress-bg, rgba(46, 127, 193, 0.14));
+    color: var(--status-progress-text, var(--sky));
 }
 
 .status-closed {
-    background: rgba(121, 185, 60, 0.16);
-    color: #4C7C21;
+    background: var(--status-closed-bg, rgba(121, 185, 60, 0.16));
+    color: var(--status-closed-text, #4C7C21);
+}
+
+/* Адаптация статусов под тёмную тему */
+html[data-theme="dark"] {
+    --status-new-bg: rgba(244, 183, 64, 0.22);
+    --status-new-text: #fcd34d;
+
+    --status-progress-bg: rgba(46, 127, 193, 0.25);
+    --status-progress-text: #38bdf8;
+
+    --status-closed-bg: rgba(121, 185, 60, 0.22);
+    --status-closed-text: #86efac;
 }
 
 /* ============================ Search / filters ============================ */
@@ -2523,32 +2534,106 @@ tbody tr:last-child td {
 
 /* ================================ Responsive ================================ */
 
+.mobile-menu-toggle,
+.mobile-menu-close,
+.mobile-menu-overlay {
+    display: none;
+}
+
 @media (max-width: 860px) {
-    .main {
-        flex-direction: column;
+    .header {
+        gap: 12px;
+        padding: 14px 18px;
+    }
+
+    .header-greeting {
+        flex: 1;
+    }
+
+    .header-clock {
+        flex-wrap: wrap;
+    }
+
+    .user-panel {
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
+
+    .footer-content span {
+        white-space: normal;
+    }
+
+    .mobile-menu-toggle,
+    .mobile-menu-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: var(--radius-sm);
+        color: #FFFFFF;
+        font-size: 26px;
+        cursor: pointer;
+    }
+
+    .mobile-menu-close {
+        align-self: flex-end;
+    }
+
+    .mobile-menu-toggle:hover,
+    .mobile-menu-close:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .mobile-menu-toggle:focus-visible,
+    .mobile-menu-close:focus-visible,
+    .sidebar a:focus-visible {
+        outline: 3px solid var(--cyan);
+        outline-offset: 2px;
+    }
+
+    .mobile-menu-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(15, 23, 42, 0.6);
+        border: 0;
+        padding: 0;
+        cursor: pointer;
     }
 
     .sidebar {
-        width: 100%;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 12px;
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 1001;
+        width: min(280px, 85vw);
+        height: 100dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        visibility: hidden;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease, visibility 0.2s;
+        box-shadow: var(--shadow-md);
     }
 
-    .brand {
-        display: none;
-    }
-
-    .sidebar ul {
-        flex-direction: row;
-    }
-
-    .sidebar a.active::before {
-        display: none;
+    .sidebar.open {
+        visibility: visible;
+        transform: translateX(0);
     }
 
     .content {
         padding: 20px 18px 32px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar {
+        transition: none;
     }
 }
 
@@ -2694,6 +2779,259 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb {
 
 html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569; /* Цвет ползунка при наведении */
+}
+
+
+/* ==========================================================================
+   9. АДАПТИВНОСТЬ ТАБЛИЦ НА МОБИЛЬНЫХ УСТРОЙСТВАХ (RESPONSIVE TABLES)
+   ========================================================================== */
+
+/* Обёртка таблицы — обеспечивает горизонтальный скролл на узких экранах */
+.table-responsive,
+.table-container,
+.ticket-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border, #cbd5e1);
+}
+
+/* Базовые стили таблицы внутри контейнера */
+.table-responsive table,
+.table-container table,
+.ticket-table {
+  width: 100%;
+  min-width: 650px; /* Гарантирует, что колонки не сжимаются в кашу */
+  border-collapse: collapse;
+}
+
+/* Кастомизация горизонтального скроллбара таблицы */
+.table-responsive::-webkit-scrollbar,
+.table-container::-webkit-scrollbar,
+.ticket-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb,
+.table-container::-webkit-scrollbar-thumb,
+.ticket-table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--ink-300, #cbd5e1);
+  border-radius: 3px;
+}
+
+
+/* ==========================================================================
+   АДАПТАЦИЯ ДЛЯ ТЁМНОЙ ТЕМЫ
+   ========================================================================== */
+html[data-theme="dark"] .table-responsive,
+html[data-theme="dark"] .table-container,
+html[data-theme="dark"] .ticket-table-wrapper {
+  border-color: var(--border, #334155);
+}
+
+html[data-theme="dark"] .table-responsive::-webkit-scrollbar-thumb,
+html[data-theme="dark"] .table-container::-webkit-scrollbar-thumb,
+html[data-theme="dark"] .ticket-table-wrapper::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+
+/* Аналитика: фильтр периода */
+.period-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px 20px;
+    margin-bottom: 18px;
+}
+
+.period-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.period-btn.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #FFFFFF;
+}
+
+.period-btn.active:hover {
+    color: #FFFFFF;
+}
+
+.period-filter-hint {
+    font-size: 13px;
+    color: var(--ink-500);
+}
+
+/* Карточки: изменение к прошлому периоду */
+.card-change {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.card-change-arrow {
+    font-size: 11px;
+}
+
+.card-change-label {
+    font-weight: 500;
+    color: var(--ink-500);
+}
+
+.card-change-good { color: #4C7C21; }
+.card-change-bad { color: #B4402F; }
+.card-change-neutral { color: var(--ink-500); }
+
+/* Аналитика: разрезы (карточки по операторам, районам, источникам) */
+.breakdown-share {
+    font-weight: 500;
+    color: var(--ink-500);
+}
+
+.chart-bars-compact .chart-row.breakdown-row {
+    grid-template-columns: 90px 1fr auto 64px;
+}
+
+.breakdown-row .chart-value {
+    width: auto;
+    white-space: nowrap;
+}
+
+.breakdown-change {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Аналитика: тепловая таблица */
+.analytics-heatmap-wrap {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.heat-table-scroll {
+    overflow-x: auto;
+}
+
+.heat-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+    font-size: 13px;
+}
+
+.heat-table th {
+    font-weight: 600;
+    color: var(--ink-700);
+    text-align: center;
+    font-size: 12px;
+}
+
+.heat-table .heat-row-head {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.heat-head-btn {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.heat-head-btn:hover {
+    color: var(--sky);
+    background: var(--mist);
+}
+
+.heat-cell {
+    min-width: 44px;
+    height: 36px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.heat-cell-empty {
+    background: var(--mist);
+    color: var(--ink-300);
+    font-weight: 400;
+}
+
+.heat-cell-click {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.heat-cell-click:hover {
+    transform: scale(1.06);
+}
+
+/* Аналитика: нажимаемые строки */
+.breakdown-row-click {
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+}
+
+.breakdown-row-click:hover,
+.breakdown-row-click:focus-visible {
+    background: var(--mist);
+    outline: none;
+}
+
+
+/* телефон 375px */
+@media (max-width: 375px) {
+    .period-filter-buttons .period-btn {
+        flex: 1 1 auto;
+    }
+
+    .chart-bars-compact .chart-row.breakdown-row {
+        grid-template-columns: 72px 1fr auto 54px;
+        gap: 6px;
+    }
+
+    .heat-table .heat-row-head {
+        position: sticky;
+        left: 0;
+        background: var(--surface);
+    }
+}
+
+/* очень большой монитор */
+@media (min-width: 1800px) {
+
+    .analytics-heatmap-wrap {
+        max-width: 1600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/*нет данных за период */
+.analytics-empty-period {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    color: var(--ink-500);
+    font-size: 14px;
 }
 
 /* ==========================================================================

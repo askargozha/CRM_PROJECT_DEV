@@ -48,6 +48,7 @@ export default function UnsentTickets() {
                 tickets={tickets} 
                 title="Неотправленные обращения" 
                 isUnsentView={true} 
+                onRefresh={retry}
             />
         </div>
     )
