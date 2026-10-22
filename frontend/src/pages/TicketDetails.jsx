@@ -9,6 +9,7 @@ import {
 } from "react-router-dom"
 
 import { useTickets } from "../context/TicketContext"
+import { useToast } from "../context/ToastContext"
 import { useAuth } from "../context/AuthContext"
 import { getUsers } from "../api/userApi"
 import { getTicketComments, addTicketComment, sendTelegramReply } from "../api/ticketApi"
@@ -25,6 +26,7 @@ const CITIZEN_ROLE_NAME = "Пользователь"
 const SPECIALIST_ROLE_NAME = "Специалист"
 
 function TicketDetails() {
+    const notify = useToast()
 
     const { id } = useParams()
     const navigate = useNavigate()
@@ -294,7 +296,7 @@ function TicketDetails() {
 
         } catch (error) {
 
-            window.alert(
+            notify(
                 error.message ||
                 t("details_error_status")
             )
@@ -358,7 +360,7 @@ function TicketDetails() {
 
         } catch (error) {
 
-            window.alert(
+            notify(
                 error.message ||
                 t("details_error_delete")
             )
@@ -375,7 +377,7 @@ function TicketDetails() {
 
         } catch (error) {
 
-            window.alert(
+            notify(
                 error.message ||
                 t("details_error_reanalyze")
             )
@@ -400,7 +402,7 @@ function TicketDetails() {
 
         } catch (error) {
 
-            window.alert(
+            notify(
                 error.message ||
                 t("details_error_send_email")
             )
@@ -429,7 +431,7 @@ function TicketDetails() {
 
         } catch (error) {
 
-            window.alert(
+            notify(
                 error.message ||
                 t("details_error_send_email")
             )

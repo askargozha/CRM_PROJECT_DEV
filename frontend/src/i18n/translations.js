@@ -3,6 +3,9 @@
 // Используется через useLanguage().t('ключ') во всех компонентах.
 
 export const translations = {
+    // --- Toast notifications ---
+    toast_close: { ru: "Закрыть уведомление", kz: "Хабарландыруды жабу" },
+
     // --- App shell: header, nav, footer ---
     app_header_title: {
         ru: "Smart Aqmola — обращения по связи",
