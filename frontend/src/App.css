@@ -691,20 +691,31 @@ tbody tr:last-child td {
     border-radius: 999px;
     background: currentColor;
 }
-
 .status-new {
-    background: rgba(244, 183, 64, 0.16);
-    color: #A66A0C;
+    background: var(--status-new-bg, rgba(244, 183, 64, 0.16));
+    color: var(--status-new-text, #A66A0C);
 }
 
 .status-progress {
-    background: rgba(46, 127, 193, 0.14);
-    color: var(--sky);
+    background: var(--status-progress-bg, rgba(46, 127, 193, 0.14));
+    color: var(--status-progress-text, var(--sky));
 }
 
 .status-closed {
-    background: rgba(121, 185, 60, 0.16);
-    color: #4C7C21;
+    background: var(--status-closed-bg, rgba(121, 185, 60, 0.16));
+    color: var(--status-closed-text, #4C7C21);
+}
+
+/* Адаптация статусов под тёмную тему */
+html[data-theme="dark"] {
+    --status-new-bg: rgba(244, 183, 64, 0.22);
+    --status-new-text: #fcd34d;
+
+    --status-progress-bg: rgba(46, 127, 193, 0.25);
+    --status-progress-text: #38bdf8;
+
+    --status-closed-bg: rgba(121, 185, 60, 0.22);
+    --status-closed-text: #86efac;
 }
 
 /* ============================ Search / filters ============================ */
