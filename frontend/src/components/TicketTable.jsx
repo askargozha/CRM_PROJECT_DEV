@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 import StatusBadge from "./StatusBadge"
 import { useLanguage } from "../context/LanguageContext"
@@ -63,14 +63,17 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
     const hidePhone = hideColumns.includes("phone")
     const hidePriority = hideColumns.includes("priority")
 
+    // «Аналитика»: /tickets?district=...&operator=...&category=...
+    // &date_from=ГГГГ-ММ-ДД&date_to=ГГГГ-ММ-ДД
+    const [searchParams] = useSearchParams()
     const [search, setSearch] = useState("")
     const [status, setStatus] = useState("Все")
-    const [operator, setOperator] = useState("Все")
-    const [district, setDistrict] = useState("Все")
-    const [category, setCategory] = useState("Все")
+    const [operator, setOperator] = useState(searchParams.get("operator") || "Все")
+    const [district, setDistrict] = useState(searchParams.get("district") || "Все")
+    const [category, setCategory] = useState(searchParams.get("category") || "Все")
     const [emailStatus, setEmailStatus] = useState("Все")
-    const [dateFrom, setDateFrom] = useState("")
-    const [dateTo, setDateTo] = useState("")
+    const [dateFrom, setDateFrom] = useState(searchParams.get("date_from") || "")
+    const [dateTo, setDateTo] = useState(searchParams.get("date_to") || "")
     const [sortOrder, setSortOrder] = useState("desc")
 
     const [resendingId, setResendingId] = useState(null)
@@ -156,6 +159,7 @@ function TicketTable({ tickets, title, hideColumns = [], isUnsentView = false, o
         })
         return Array.from(unique).sort()
     }, [tickets])
+
 
     const filteredTickets = tickets
         .filter(ticket =>
