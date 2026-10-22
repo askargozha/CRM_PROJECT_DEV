@@ -428,9 +428,22 @@ function Analytics() {
                 )}
 
             </div>
+            
+            {summaryLoading && (
+                <div className="page-message">
+                    <div className="loader"></div>
+                    <p>{t("analytics_loading")}</p>
+                </div>
+            )}
+
+            {!summaryLoading && periodSummary.length === 0 && (
+                <p className="analytics-empty-period">
+                    {t("analytics_empty_period")}
+                </p>
+            )}
 
             <div className="cards">
-                {stats.map((item) => (
+                {!summaryLoading && stats.map((item) => (
                     <StatCard
                         key={item.key}
                         title={item.title}
