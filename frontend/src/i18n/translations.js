@@ -477,7 +477,6 @@ export const translations = {
     unsent_banner_reason_prefix: { ru: "Причина:", kz: "Себебі:" },
     unsent_banner_reason_default: { ru: "Причина: письмо не отправлено", kz: "Себебі: хат жіберілген жоқ" },
     // --- Extra table keys ---
-    filter_category_all: { ru: "Все категории", kz: "Барлық санаттар" },
     sort_oldest: { ru: "Сначала старые", kz: "Алдымен ескілері" },
     sort_newest: { ru: "Сначала новые", kz: "Алдымен жаңалары" },
     table_col_delay_reason: { ru: "Причина задержки", kz: "Кешігу себебі" },
