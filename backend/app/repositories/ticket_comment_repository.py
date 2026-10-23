@@ -26,7 +26,7 @@ class TicketCommentRepository:
         db.add(comment)
 
         try:
-            db.commit()
+            db.flush()
             db.refresh(comment)
             return comment
         except Exception:

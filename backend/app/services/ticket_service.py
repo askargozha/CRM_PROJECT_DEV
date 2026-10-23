@@ -15,6 +15,7 @@ from app.schemas.ticket import TicketCreate, TicketUpdate
 from app.services.ai_service import AIAnalysisError, analyze_ticket
 from app.services.email_service import EmailSendError, send_ticket_notification
 from app.services.telegram_notify import send_telegram_message, send_telegram_photo
+from app.services.ticket_history_service import log_ticket_event
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +145,22 @@ class TicketService:
             db,
             new_ticket
         )
+
+        log_ticket_event(
+            db=db,
+            ticket_id=ticket.id,
+            event_type="ticket_created",
+            description="Создано новое обращение",
+            actor_user_id=current_user.id,
+            details={
+                "source": getattr(ticket, "source", None),
+                "applicant": ticket.applicant,
+                "phone": ticket.phone,
+            },
+        )
+
+        db.commit()
+        db.refresh(ticket)
 
         # ИИ-анализ выполняется сразу после создания.
         # Если локальная модель недоступна/ошиблась — сообщение
@@ -350,7 +367,28 @@ class TicketService:
             ticket.email_sent = False
             ticket.email_error = str(error)
 
+        log_ticket_event(
+            db=db,
+            ticket_id=ticket.id,
+            event_type=(
+                "email_sent"
+                if ticket.email_sent
+                else "email_send_failed"
+            ),
+            description=(
+                "Письмо оператору успешно отправлено"
+                if ticket.email_sent
+                else "Не удалось отправить письмо оператору"
+            ),
+            actor_user_id=None,
+            details={
+                "email_sent": ticket.email_sent,
+                "email_error": ticket.email_error,
+            },
+        )
+
         self.repository.update(db, ticket)
+
 
     def reanalyze_ticket(
         self,
@@ -434,8 +472,22 @@ class TicketService:
         except AIAnalysisError as error:
             ticket.ai_processed = False
             ticket.ai_summary = f"ИИ-анализ не выполнен: {error}"
+
+            log_ticket_event(
+                db=db,
+                ticket_id=ticket.id,
+                event_type="ai_analysis_failed",
+                description="ИИ-анализ обращения не выполнен",
+                actor_user_id=None,
+                details={
+                    "error": str(error),
+                    "force_priority": force_priority,
+                },
+            )
+
             self.repository.update(db, ticket)
             return
+
 
         valid_specialist_ids = {s["id"] for s in specialists}
         suggested_user_id = result.get("assigned_user_id")
@@ -476,6 +528,26 @@ class TicketService:
         ):
             ticket.assigned_user_id = suggested_user_id
 
+        log_ticket_event(
+            db=db,
+            ticket_id=ticket.id,
+            event_type=(
+                "ai_analysis_completed"
+                if not force_priority
+                else "ai_analysis_completed_on_creation"
+            ),
+            description="ИИ-анализ обращения успешно завершён",
+            actor_user_id=None,
+            details={
+                "category": ticket.ai_category,
+                "operator": ticket.ai_operator,
+                "priority": ticket.ai_priority,
+                "assigned_user_id": ticket.assigned_user_id,
+                "confidence": ticket.ai_confidence,
+                "force_priority": force_priority,
+            },
+        )
+
         self.repository.update(db, ticket)
 
     def update_ticket(
@@ -498,12 +570,7 @@ class TicketService:
             exclude_unset=True
         )
 
-        # Назначать/менять исполнителя может только администратор —
-        # специалист может видеть и менять остальные поля (статус,
-        # приоритет и т.п.) как обычно, но не переназначать
-        # исполнителя. Проверяем именно тут, а не только в интерфейсе
-        # — иначе специалист мог бы обойти ограничение прямым запросом
-        # к API, минуя кнопку в интерфейсе.
+        # Назначать/менять исполнителя может только администратор
         if (
             "assigned_user_id" in update_data
             and current_user.role.name == SPECIALIST_ROLE_NAME
@@ -513,13 +580,42 @@ class TicketService:
                 detail="Назначать исполнителя может только администратор"
             )
 
+        changes = {}
+
         for field, value in update_data.items():
+            old_value = getattr(ticket, field, None)
+
+            if old_value != value:
+                changes[field] = {
+                    "before": str(old_value) if old_value is not None else None,
+                    "after": str(value) if value is not None else None,
+                }
+
             setattr(ticket, field, value)
+
+        if changes:
+            log_ticket_event(
+                db=db,
+                ticket_id=ticket.id,
+                event_type="ticket_updated",
+                description="Изменены поля обращения",
+                actor_user_id=current_user.id,
+                before_value=str({
+                    field: change["before"]
+                    for field, change in changes.items()
+                }),
+                after_value=str({
+                    field: change["after"]
+                    for field, change in changes.items()
+                }),
+                details={"changes": changes},
+            )
 
         return self.repository.update(
             db,
             ticket
         )
+
 
     def delete_ticket(
         self,
@@ -578,4 +674,24 @@ class TicketService:
             text=cleaned_text
         )
 
-        return self.comment_repository.create(db, comment)
+        try:
+            created_comment = self.comment_repository.create(db, comment)
+
+            log_ticket_event(
+                db=db,
+                ticket_id=ticket_id,
+                event_type="comment_added",
+                description="Добавлен комментарий к обращению",
+                actor_user_id=current_user.id,
+                details={
+                    "comment_id": created_comment.id,
+                },
+            )
+
+            db.commit()
+            db.refresh(created_comment)
+            return created_comment
+
+        except Exception:
+            db.rollback()
+            raise
