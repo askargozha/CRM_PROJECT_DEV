@@ -18,6 +18,6 @@ __all__ = [
     "Ticket",
     "TicketAttachment",
     "TicketComment",
-    "User"
+    "User",
     "TicketHistory"          #Зарегистрировал модель истории для импорта через models
 ]

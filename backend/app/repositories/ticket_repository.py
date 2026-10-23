@@ -69,10 +69,14 @@ class TicketRepository:
         ticket: Ticket
     ) -> Ticket:
         db.add(ticket)
-        db.commit()
-        db.refresh(ticket)
 
-        return ticket
+        try:
+            db.flush()
+            db.refresh(ticket)
+            return ticket
+        except Exception:
+            db.rollback()
+            raise
 
     def update(
         self,

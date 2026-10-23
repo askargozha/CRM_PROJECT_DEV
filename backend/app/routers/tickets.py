@@ -2,6 +2,8 @@ import os
 import tempfile
 import uuid
 from datetime import date
+from app.models.ticket_history import TicketHistory
+from app.schemas.ticket_history import TicketHistoryResponse
 
 from fastapi import (
     APIRouter,
@@ -126,6 +128,60 @@ def download_tickets_report(
             )
         }
     )
+
+
+@router.get(
+    "/{ticket_id}/history",
+    response_model=list[TicketHistoryResponse]
+)
+def get_ticket_history(
+    ticket_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ticket_service.get_ticket_by_id(db, ticket_id, current_user)
+
+    history_entries = (
+        db.query(TicketHistory)
+        .filter(
+            (TicketHistory.ticket_id == ticket_id)
+            | (TicketHistory.ticket_reference == ticket_id)
+        )
+        .order_by(
+            TicketHistory.created_at.desc(),
+            TicketHistory.id.desc()
+        )
+        .all()
+    )
+
+    result = []
+
+    for entry in history_entries:
+        actor_name = "Система"
+
+        if entry.actor_user_id is not None:
+            actor = db.query(User).filter(
+                User.id == entry.actor_user_id
+            ).first()
+
+            if actor:
+                actor_name = actor.full_name
+
+        result.append({
+            "id": entry.id,
+            "ticket_id": entry.ticket_id,
+            "ticket_reference": entry.ticket_reference,
+            "actor_user_id": entry.actor_user_id,
+            "actor_name": actor_name,
+            "event_type": entry.event_type,
+            "description": entry.description,
+            "before_value": entry.before_value,
+            "after_value": entry.after_value,
+            "details": entry.details,
+            "created_at": entry.created_at,
+        })
+
+    return result
 
 
 @router.get(
