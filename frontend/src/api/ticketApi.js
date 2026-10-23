@@ -259,3 +259,7 @@ export async function downloadTicketsReport(dateFrom, dateTo, format = "pdf") {
 
     window.URL.revokeObjectURL(downloadUrl)
 }
+
+export function getTicketHistory(id) {
+    return request(`/tickets/${id}/history`)
+}
