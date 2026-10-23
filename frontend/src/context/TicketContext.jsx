@@ -205,10 +205,14 @@ export function TicketProvider({ children }) {
                 ...updatedData
             }
 
-            const payload =
-                prepareTicketPayload(
-                    mergedTicket
-                )
+            const payload = prepareTicketPayload(mergedTicket)
+
+            if (
+                user?.role_name === "Специалист" &&
+                !Object.prototype.hasOwnProperty.call(updatedData, "assigned_user_id")
+            ) {
+                delete payload.assigned_user_id
+}
 
             const response =
                 await updateTicketRequest(

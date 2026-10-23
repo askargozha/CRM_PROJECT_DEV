@@ -12,7 +12,12 @@ import { useTickets } from "../context/TicketContext"
 import { useToast } from "../context/ToastContext"
 import { useAuth } from "../context/AuthContext"
 import { getUsers } from "../api/userApi"
-import { getTicketComments, addTicketComment, sendTelegramReply } from "../api/ticketApi"
+import {
+    getTicketComments,
+    addTicketComment,
+    sendTelegramReply,
+    getTicketHistory
+} from "../api/ticketApi"
 import { getEmailOperators } from "../api/emailOperatorsApi"
 
 import { API_URL } from "../api/config"
@@ -88,6 +93,10 @@ function TicketDetails() {
     const [newComment, setNewComment] = useState("")
     const [commentError, setCommentError] = useState("")
     const [postingComment, setPostingComment] = useState(false)
+
+    const [history, setHistory] = useState([])
+    const [historyLoading, setHistoryLoading] = useState(true)
+    const [historyError, setHistoryError] = useState("")
 
     const [openPhoto, setOpenPhoto] = useState(null)
 
@@ -222,6 +231,43 @@ function TicketDetails() {
             cancelled = true
         }
 
+    }, [ticket?.id])
+
+    useEffect(() => {
+        if (!ticket) {
+            return
+        }
+
+        let cancelled = false
+
+        async function loadHistory() {
+            try {
+                setHistoryLoading(true)
+                setHistoryError("")
+
+                const response = await getTicketHistory(ticket.id)
+
+                if (!cancelled) {
+                    setHistory(response.data)
+                }
+            } catch (error) {
+                console.error("Ошибка загрузки истории:", error)
+
+                if (!cancelled) {
+                    setHistoryError(error.message || "Не удалось загрузить историю")
+                }
+            } finally {
+                if (!cancelled) {
+                    setHistoryLoading(false)
+                }
+            }
+        }
+
+        loadHistory()
+
+        return () => {
+            cancelled = true
+        }
     }, [ticket?.id])
 
     useEffect(() => {
@@ -1088,6 +1134,33 @@ function TicketDetails() {
 
                     </div>
                 )}
+                <div className="detail-description">
+                    <h3>📜 История обращения</h3>
+
+                    {historyLoading ? (
+                        <p>Загрузка истории...</p>
+                    ) : historyError ? (
+                        <p>{historyError}</p>
+                    ) : history.length === 0 ? (
+                        <p>История пока пуста.</p>
+                    ) : (
+                        <div className="comments-list">
+                            {history.map((event) => (
+                                <div className="comment-item" key={event.id}>
+                                    <div className="comment-item-header">
+                                        <strong>{event.actor_name}</strong>
+                                        <span>
+                                            {new Date(event.created_at).toLocaleString(
+                                                language === "kz" ? "kk-KZ" : "ru-RU"
+                                            )}
+                                        </span>
+                                    </div>
+                                    <p>{event.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 <div className="detail-description">
 
